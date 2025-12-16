@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+front/node_modules/
+front/.next/
+front/out/
+front/build/
+front/dist/
+front/.pnpm-store/
+
+# Build outputs
+JEEproject/target/
+JEEproject/.classpath
+JEEproject/.project
+JEEproject/.settings/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache
+.cache/
+.parcel-cache/
+.next/
+.turbo/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Package manager locks (optionnel - certains projets les gardent)
+# package-lock.json
+# pnpm-lock.yaml
+# yarn.lock
+

@@ -1,0 +1,84 @@
+package com.cabinetmedical.service;
+
+import com.cabinetmedical.entity.Cabinet;
+import com.cabinetmedical.entity.DossierMedical;
+import com.cabinetmedical.entity.Patient;
+import com.cabinetmedical.repository.CabinetRepository;
+import com.cabinetmedical.repository.DossierMedicalRepository;
+import com.cabinetmedical.repository.PatientRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class PatientService {
+
+    @Autowired
+    private PatientRepository patientRepository;
+
+    @Autowired
+    private CabinetRepository cabinetRepository;
+
+    @Autowired
+    private DossierMedicalRepository dossierMedicalRepository;
+
+    public List<Patient> getAllPatients(Long cabinetId) {
+        return patientRepository.findByCabinetId(cabinetId);
+    }
+
+    public Patient getPatientById(Long id) {
+        return patientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Patient non trouvé"));
+    }
+
+    public Patient getPatientByCin(String cin) {
+        return patientRepository.findByCin(cin)
+                .orElseThrow(() -> new RuntimeException("Patient non trouvé avec CIN: " + cin));
+    }
+
+    public List<Patient> searchPatients(Long cabinetId, String search) {
+        return patientRepository.searchPatients(cabinetId, search);
+    }
+
+    @Transactional
+    public Patient createPatient(Patient patient, Long cabinetId) {
+        Cabinet cabinet = cabinetRepository.findById(cabinetId)
+                .orElseThrow(() -> new RuntimeException("Cabinet non trouvé"));
+
+        if (patientRepository.findByCin(patient.getCin()).isPresent()) {
+            throw new RuntimeException("Un patient avec ce CIN existe déjà");
+        }
+
+        patient.setCabinet(cabinet);
+        Patient savedPatient = patientRepository.save(patient);
+
+        // Créer le dossier médical automatiquement
+        DossierMedical dossier = new DossierMedical();
+        dossier.setPatient(savedPatient);
+        dossier.setDateCreation(LocalDateTime.now());
+        dossierMedicalRepository.save(dossier);
+
+        return savedPatient;
+    }
+
+    public Patient updatePatient(Long id, Patient patientDetails) {
+        Patient patient = getPatientById(id);
+        patient.setNom(patientDetails.getNom());
+        patient.setPrenom(patientDetails.getPrenom());
+        patient.setDateNaissance(patientDetails.getDateNaissance());
+        patient.setSexe(patientDetails.getSexe());
+        patient.setNumTel(patientDetails.getNumTel());
+        patient.setTypemutuelle(patientDetails.getTypemutuelle());
+        return patientRepository.save(patient);
+    }
+
+    public void deletePatient(Long id) {
+        patientRepository.deleteById(id);
+    }
+}
+
+

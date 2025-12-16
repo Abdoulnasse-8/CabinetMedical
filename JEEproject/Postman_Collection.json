@@ -1,0 +1,965 @@
+{
+	"info": {
+		"_postman_id": "cabinet-medical-api",
+		"name": "Cabinet Medical API",
+		"description": "Collection complète pour tester toutes les API du backend Cabinet Médical",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentification",
+			"item": [
+				{
+					"name": "Login - Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"    pm.environment.set(\"userId\", jsonData.userId);",
+									"    pm.environment.set(\"cabinetId\", jsonData.cabinetId);",
+									"    pm.environment.set(\"role\", jsonData.role);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"login\": \"admin\",\n    \"pwd\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login - Médecin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"    pm.environment.set(\"medecinId\", jsonData.userId);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"login\": \"medecin1\",\n    \"pwd\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Login - Secrétaire",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"login\": \"secretaire1\",\n    \"pwd\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Secrétaire - Patients",
+			"item": [
+				{
+					"name": "Liste des Patients",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/secretaire/patients?cabinetId={{cabinetId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "secretaire", "patients"],
+							"query": [
+								{
+									"key": "cabinetId",
+									"value": "{{cabinetId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Rechercher Patient",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/secretaire/patients/search?cabinetId={{cabinetId}}&search=Alami",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "secretaire", "patients", "search"],
+							"query": [
+								{
+									"key": "cabinetId",
+									"value": "{{cabinetId}}"
+								},
+								{
+									"key": "search",
+									"value": "Alami"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Créer Patient",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cin\": \"CD789012\",\n    \"nom\": \"Bennani\",\n    \"prenom\": \"Fatima\",\n    \"dateNaissance\": \"1985-05-20\",\n    \"sexe\": \"F\",\n    \"numTel\": \"0623456789\",\n    \"typemutuelle\": \"CNOPS\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/secretaire/patients?cabinetId={{cabinetId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "secretaire", "patients"],
+							"query": [
+								{
+									"key": "cabinetId",
+									"value": "{{cabinetId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Patient par CIN",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/secretaire/patients/cin/CD789012",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "secretaire", "patients", "cin", "CD789012"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Secrétaire - Rendez-vous",
+			"item": [
+				{
+					"name": "Liste Rendez-vous",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/secretaire/rendez-vous?cabinetId={{cabinetId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "secretaire", "rendez-vous"],
+							"query": [
+								{
+									"key": "cabinetId",
+									"value": "{{cabinetId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Créer Rendez-vous",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"dateRdv\": \"2025-01-20\",\n    \"heureRdv\": \"14:00:00\",\n    \"motif\": \"Consultation\",\n    \"notes\": \"Première visite\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/secretaire/rendez-vous?patientId={{patientId}}&medecinId={{medecinId}}&cabinetId={{cabinetId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "secretaire", "rendez-vous"],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "{{patientId}}"
+								},
+								{
+									"key": "medecinId",
+									"value": "{{medecinId}}"
+								},
+								{
+									"key": "cabinetId",
+									"value": "{{cabinetId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Confirmer Rendez-vous",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/secretaire/rendez-vous/{{rendezVousId}}/statut?statut=CONFIRME",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "secretaire", "rendez-vous", "{{rendezVousId}}", "statut"],
+							"query": [
+								{
+									"key": "statut",
+									"value": "CONFIRME"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Secrétaire - Factures",
+			"item": [
+				{
+					"name": "Liste Factures",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/secretaire/factures?cabinetId={{cabinetId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "secretaire", "factures"],
+							"query": [
+								{
+									"key": "cabinetId",
+									"value": "{{cabinetId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Créer Facture",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"montant\": 250.00,\n    \"modePaiement\": \"CARTE\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/secretaire/factures?patientId={{patientId}}&cabinetId={{cabinetId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "secretaire", "factures"],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "{{patientId}}"
+								},
+								{
+									"key": "cabinetId",
+									"value": "{{cabinetId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Marquer Facture Payée",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/secretaire/factures/{{factureId}}/statut?statut=PAYEE",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "secretaire", "factures", "{{factureId}}", "statut"],
+							"query": [
+								{
+									"key": "statut",
+									"value": "PAYEE"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Médecin - Patients",
+			"item": [
+				{
+					"name": "Rechercher Patient",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/medecin/patients/search?cabinetId={{cabinetId}}&search=Bennani",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medecin", "patients", "search"],
+							"query": [
+								{
+									"key": "cabinetId",
+									"value": "{{cabinetId}}"
+								},
+								{
+									"key": "search",
+									"value": "Bennani"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Patient par CIN",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/medecin/patients/cin/CD789012",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medecin", "patients", "cin", "CD789012"]
+						}
+					}
+				},
+				{
+					"name": "Get Dossier Médical",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/medecin/patients/{{patientId}}/dossier",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medecin", "patients", "{{patientId}}", "dossier"]
+						}
+					}
+				},
+				{
+					"name": "Mettre à jour Dossier Médical",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"antMedicaux\": \"Hypertension\",\n    \"antChirug\": \"Appendicectomie 2010\",\n    \"allergies\": \"Pénicilline\",\n    \"traitement\": \"Aspirine 100mg/jour\",\n    \"habitudes\": \"Non fumeur\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/medecin/patients/{{patientId}}/dossier",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medecin", "patients", "{{patientId}}", "dossier"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Médecin - Consultations",
+			"item": [
+				{
+					"name": "Historique Consultations",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/medecin/patients/{{patientId}}/consultations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medecin", "patients", "{{patientId}}", "consultations"]
+						}
+					}
+				},
+				{
+					"name": "Créer Consultation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"type\": \"CONSULTATION\",\n    \"examenClinique\": \"TA: 120/75, FC: 68 bpm, Temp: 36.5°C\",\n    \"examenSupplementaire\": \"Aucun\",\n    \"diagnostic\": \"État de santé normal\",\n    \"traitement\": \"Paracétamol 500mg si douleur\",\n    \"observations\": \"Patient en bonne santé, contrôle dans 6 mois\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/medecin/consultations?patientId={{patientId}}&medecinId={{medecinId}}&rendezVousId={{rendezVousId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medecin", "consultations"],
+							"query": [
+								{
+									"key": "patientId",
+									"value": "{{patientId}}"
+								},
+								{
+									"key": "medecinId",
+									"value": "{{medecinId}}"
+								},
+								{
+									"key": "rendezVousId",
+									"value": "{{rendezVousId}}",
+									"disabled": true
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Médecin - Dashboard",
+			"item": [
+				{
+					"name": "Dashboard Médecin",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/medecin/dashboard?cabinetId={{cabinetId}}&medecinId={{medecinId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medecin", "dashboard"],
+							"query": [
+								{
+									"key": "cabinetId",
+									"value": "{{cabinetId}}"
+								},
+								{
+									"key": "medecinId",
+									"value": "{{medecinId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Rendez-vous Aujourd'hui",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/medecin/rendez-vous/aujourdhui?medecinId={{medecinId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "medecin", "rendez-vous", "aujourdhui"],
+							"query": [
+								{
+									"key": "medecinId",
+									"value": "{{medecinId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Administrateur - Cabinets",
+			"item": [
+				{
+					"name": "Liste Cabinets",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/cabinets",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "cabinets"]
+						}
+					}
+				},
+				{
+					"name": "Créer Cabinet",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Cabinet Ophtalmologique\",\n    \"specialite\": \"Ophtalmologue\",\n    \"adresse\": \"456 Avenue Mohammed V, Rabat\",\n    \"tel\": \"0537123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/cabinets",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "cabinets"]
+						}
+					}
+				},
+				{
+					"name": "Activer/Désactiver Cabinet",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/cabinets/{{cabinetId}}/toggle",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "cabinets", "{{cabinetId}}", "toggle"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "9. Administrateur - Médicaments",
+			"item": [
+				{
+					"name": "Liste Médicaments",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/medicaments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "medicaments"]
+						}
+					}
+				},
+				{
+					"name": "Rechercher Médicament",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/medicaments/search?search=Paracétamol",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "medicaments", "search"],
+							"query": [
+								{
+									"key": "search",
+									"value": "Paracétamol"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Ajouter Médicament",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Doliprane\",\n    \"dosage\": \"1000mg\",\n    \"forme\": \"Comprimé\",\n    \"description\": \"Paracétamol\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/admin/medicaments",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "admin", "medicaments"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "10. Notifications",
+			"item": [
+				{
+					"name": "Rendez-vous Aujourd'hui",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications/rendez-vous/aujourdhui?medecinId={{medecinId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications", "rendez-vous", "aujourdhui"],
+							"query": [
+								{
+									"key": "medecinId",
+									"value": "{{medecinId}}"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Patient en Cours",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications/patient-en-cours?medecinId={{medecinId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications", "patient-en-cours"],
+							"query": [
+								{
+									"key": "medecinId",
+									"value": "{{medecinId}}"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "cabinetId",
+			"value": "1"
+		},
+		{
+			"key": "medecinId",
+			"value": "2"
+		},
+		{
+			"key": "patientId",
+			"value": ""
+		},
+		{
+			"key": "rendezVousId",
+			"value": ""
+		},
+		{
+			"key": "factureId",
+			"value": ""
+		}
+	]
+}
+
+
