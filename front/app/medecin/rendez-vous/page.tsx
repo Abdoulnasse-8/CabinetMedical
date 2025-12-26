@@ -63,49 +63,95 @@ function RendezVousContent() {
     )
   }
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Mes Rendez-vous</h1>
-        <p className="text-muted-foreground">{"Liste de vos rendez-vous du jour"}</p>
+
+return (
+  <div className="min-h-screen bg-gradient-to-b from-[#f5f7f6] to-[#eef3f1]">
+    <div className="mx-auto max-w-7xl px-6 py-10 space-y-10">
+
+      {/* HEADER */}
+      <div className="space-y-2">
+        <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
+          Médecin
+        </p>
+        <h1 className="text-3xl md:text-4xl font-semibold text-[#1d3f24]">
+          Mes rendez-vous
+        </h1>
+        <p className="text-sm md:text-base text-[#1d3f24]/70">
+          Liste de vos rendez-vous programmés pour aujourd&apos;hui
+        </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            {"Aujourd'hui"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* MAIN CARD */}
+      <div className="rounded-[2rem] bg-white/70 backdrop-blur border border-slate-200/60 shadow-[0_18px_55px_rgba(0,0,0,0.08)]">
+        <div className="p-6 md:p-10">
+
+          {/* CARD HEADER */}
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-[#2D4B23]/10 flex items-center justify-center">
+                <Calendar className="h-5 w-5 text-[#2D4B23]" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-[#1d3f24]">
+                  Aujourd&apos;hui
+                </h2>
+                <p className="text-sm text-slate-600">
+                  {appointments.length} rendez-vous
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* CONTENT */}
           {appointments.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">{"Aucun rendez-vous prévu pour aujourd'hui"}</p>
+            <div className="py-20 text-center">
+              <Calendar className="mx-auto h-12 w-12 text-slate-300 mb-4" />
+              <p className="text-sm text-slate-500">
+                Aucun rendez-vous prévu pour aujourd&apos;hui
+              </p>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {appointments.map((rdv) => (
-                <div key={rdv.id} className="flex items-center justify-between rounded-lg border p-4">
+                <div
+                  key={rdv.id}
+                  className="flex flex-col gap-4 rounded-xl bg-slate-50 p-4 transition hover:bg-slate-100 md:flex-row md:items-center md:justify-between"
+                >
+                  {/* LEFT */}
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                      <Clock className="h-6 w-6 text-primary" />
+                    <div className="h-12 w-12 rounded-xl bg-[#2D4B23]/10 flex items-center justify-center">
+                      <Clock className="h-5 w-5 text-[#2D4B23]" />
                     </div>
+
                     <div>
-                      <p className="font-medium">
+                      <p className="font-medium text-[#1d3f24]">
                         {rdv.patient?.prenom} {rdv.patient?.nom}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-slate-500">
                         {new Date(rdv.dateHeure).toLocaleTimeString("fr-FR", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </p>
-                      {rdv.motif && <p className="text-sm text-muted-foreground">{rdv.motif}</p>}
+                      {rdv.motif && (
+                        <p className="text-sm text-slate-500">
+                          {rdv.motif}
+                        </p>
+                      )}
                     </div>
                   </div>
+
+                  {/* RIGHT */}
                   <div className="flex items-center gap-3">
                     {getStatutBadge(rdv.statut)}
+
                     {rdv.patient && (
                       <Link href={`/medecin/patient/${rdv.patient.id}`}>
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full border-[#2D4B23]/30 text-[#2D4B23] hover:bg-[#2D4B23]/10"
+                        >
                           Consulter
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
@@ -116,10 +162,11 @@ function RendezVousContent() {
               ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
-  )
+  </div>
+)
 }
 
 export default function MedecinRendezVousPage() {

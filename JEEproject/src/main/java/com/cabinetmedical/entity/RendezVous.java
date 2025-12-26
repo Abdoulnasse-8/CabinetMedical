@@ -1,22 +1,24 @@
+
 package com.cabinetmedical.entity;
 
 import com.cabinetmedical.enums.StatutRendezVous;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
 @Table(name = "rendez_vous")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"patient","medecin","cabinet","consultation"})
 public class RendezVous {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long idRendezVous;
 
     @Column(name = "date_rdv", nullable = false)
@@ -35,20 +37,22 @@ public class RendezVous {
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
+    @JsonIgnore
     private Patient patient;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medecin_id", nullable = false)
+    @JsonIgnore
     private Utilisateur medecin;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cabinet_id")
     private Cabinet cabinet;
 
-    @OneToOne(mappedBy = "rendezVous", cascade = CascadeType.ALL)
+    // Casse la boucle RendezVous <-> Consultation
+    @OneToOne(mappedBy = "rendezVous", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private Consultation consultation;
 }
-
-

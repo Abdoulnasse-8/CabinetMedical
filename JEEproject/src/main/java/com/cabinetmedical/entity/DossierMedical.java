@@ -1,21 +1,23 @@
+
 package com.cabinetmedical.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "dossiers_medicaux")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"patient","historiqueConsultations"})
 public class DossierMedical {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long idDossier;
 
     @Column(name = "ant_medicaux", columnDefinition = "TEXT")
@@ -39,12 +41,13 @@ public class DossierMedical {
     @Column(name = "date_creation", nullable = false)
     private LocalDateTime dateCreation;
 
-    @OneToOne
+    // Casse la boucle JSON
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false, unique = true)
+    @JsonIgnore
     private Patient patient;
 
-    @OneToMany(mappedBy = "dossierMedical", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "dossierMedical", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Consultation> historiqueConsultations;
 }
-
-

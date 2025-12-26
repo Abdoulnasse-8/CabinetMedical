@@ -1,3 +1,4 @@
+
 package com.cabinetmedical.controller;
 
 import com.cabinetmedical.entity.Patient;
@@ -5,12 +6,9 @@ import com.cabinetmedical.service.PatientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/secretaire/patients")
@@ -35,11 +33,24 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getPatientByCin(cin));
     }
 
+    // ✅ CORRIGÉ: accepte search / q / query et gère vide => []
     @GetMapping("/search")
     public ResponseEntity<List<Patient>> searchPatients(
             @RequestParam Long cabinetId,
-            @RequestParam String search) {
-        return ResponseEntity.ok(patientService.searchPatients(cabinetId, search));
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, name = "q") String q,
+            @RequestParam(required = false, name = "query") String query
+    ) {
+        String term = (search != null && !search.isBlank()) ? search
+                : (q != null && !q.isBlank()) ? q
+                : (query != null && !query.isBlank()) ? query
+                : null;
+
+        if (term == null || term.isBlank()) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        return ResponseEntity.ok(patientService.searchPatients(cabinetId, term.trim()));
     }
 
     @PostMapping
@@ -63,5 +74,3 @@ public class PatientController {
         return ResponseEntity.noContent().build();
     }
 }
-
-

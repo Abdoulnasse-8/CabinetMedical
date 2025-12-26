@@ -1,18 +1,19 @@
+
 package com.cabinetmedical.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "cabinets")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString
 public class Cabinet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "logo", columnDefinition = "TEXT")
@@ -33,5 +34,3 @@ public class Cabinet {
     @Column(name = "actif", nullable = false)
     private Boolean actif = true;
 }
-
-

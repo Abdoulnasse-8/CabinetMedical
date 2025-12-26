@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
@@ -24,7 +25,10 @@ function PatientPageContent() {
   const params = useParams()
   const router = useRouter()
   const { user } = useAuth()
-  const patientId = Number(params.id)
+
+  // ✅ robust parsing (params.id peut être string | string[])
+  const rawId = (params as any)?.id
+  const patientId = Number(Array.isArray(rawId) ? rawId[0] : rawId)
 
   const [patient, setPatient] = useState<Patient | null>(null)
   const [dossier, setDossier] = useState<DossierMedical | null>(null)
@@ -33,6 +37,19 @@ function PatientPageContent() {
   const [activeTab, setActiveTab] = useState("dossier")
 
   const fetchPatientData = useCallback(async () => {
+    // ✅ reset states on id change + invalid id guard
+    setIsLoading(true)
+    setPatient(null)
+    setDossier(null)
+    setConsultations([])
+
+    if (!Number.isFinite(patientId) || patientId <= 0) {
+      setIsLoading(false)
+      return
+    }
+
+    let alive = true
+
     try {
       const [patientData, dossierData, consultationsData] = await Promise.all([
         api.getPatient(patientId),
@@ -40,21 +57,37 @@ function PatientPageContent() {
         api.getConsultationsPatient(patientId),
       ])
 
+      if (!alive) return
+
       setPatient(patientData)
       setDossier(dossierData)
-      setConsultations(consultationsData)
+      setConsultations(Array.isArray(consultationsData) ? consultationsData : [])
     } catch (error) {
       console.error("[v0] Error fetching patient data:", error)
     } finally {
-      setIsLoading(false)
+      if (alive) setIsLoading(false)
+    }
+
+    return () => {
+      alive = false
     }
   }, [patientId])
 
   useEffect(() => {
-    fetchPatientData()
+    let cleanup: void | (() => void)
+
+    ;(async () => {
+      cleanup = await fetchPatientData()
+    })()
+
+    return () => {
+      if (typeof cleanup === "function") cleanup()
+    }
   }, [fetchPatientData])
 
   const handleDossierUpdate = async (updatedDossier: Partial<DossierMedical>) => {
+    if (!Number.isFinite(patientId) || patientId <= 0) return false
+
     try {
       const result = await api.updateDossierMedical(patientId, updatedDossier)
       setDossier(result)
@@ -67,6 +100,7 @@ function PatientPageContent() {
 
   const handleNewConsultation = async (consultation: Partial<Consultation>) => {
     if (!user?.id) return false
+    if (!Number.isFinite(patientId) || patientId <= 0) return false
 
     try {
       const newConsultation = await api.createConsultation({

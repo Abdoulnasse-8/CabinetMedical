@@ -1,21 +1,24 @@
+
+// Patient.java
 package com.cabinetmedical.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "patients")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"dossierMedical","rendezVous","factures"})
 public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "cin", unique = true, nullable = false)
@@ -39,18 +42,21 @@ public class Patient {
     @Column(name = "type_mutuelle")
     private String typemutuelle;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cabinet_id")
     private Cabinet cabinet;
 
-    @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL)
+    // Evite patient -> dossierMedical -> patient -> ...
+    @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private DossierMedical dossierMedical;
 
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
+    // Evite renvoyer rdvs/factures dans /patients (sinon objets énormes + cycles possibles)
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<RendezVous> rendezVous;
 
-    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Facture> factures;
 }
-
-

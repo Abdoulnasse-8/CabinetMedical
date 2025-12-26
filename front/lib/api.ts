@@ -20,6 +20,7 @@ class ApiClient {
     return null
   }
 
+
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const token = this.getToken()
 
@@ -50,14 +51,33 @@ class ApiClient {
       throw new Error("Accès interdit")
     }
 
+    const contentType = response.headers.get("content-type") || ""
+    const text = await response.text()
+    
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: "Erreur serveur" }))
-      throw new Error(error.message || "Erreur serveur")
+      let message = "Erreur serveur"
+      if (contentType.includes("application/json")) {
+        try {
+          const obj = JSON.parse(text)
+          message = obj?.message || obj?.error || message
+        } catch {}
+      } else if (text) {
+        message = text.slice(0, 400)
+      }
+      throw new Error(message)
     }
 
-    return response.json()
-  }
+    if (!contentType.includes("application/json")) {
+      throw new Error(`Réponse non-JSON (${contentType}): ${text.slice(0, 200)}`)
+    }
 
+    try {
+      return JSON.parse(text) as T
+    } catch {
+      throw new Error(`JSON invalide: ${text.slice(0, 200)}`)
+    }
+  }
   // Auth
   async login(login: string, pwd: string) {
     const response = await this.request<{

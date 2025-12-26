@@ -1,21 +1,23 @@
+
 package com.cabinetmedical.entity;
 
 import com.cabinetmedical.enums.TypeConsultation;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "consultations")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = {"medecin","patient","dossierMedical","rendezVous"})
 public class Consultation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long idConsultation;
 
     @Enumerated(EnumType.STRING)
@@ -40,21 +42,22 @@ public class Consultation {
     @Column(name = "observations", columnDefinition = "TEXT")
     private String observations;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medecin_id", nullable = false)
+    @JsonIgnore
     private Utilisateur medecin;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
+    @JsonIgnore
     private Patient patient;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dossier_medical_id")
+    @JsonIgnore
     private DossierMedical dossierMedical;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rendez_vous_id")
     private RendezVous rendezVous;
 }
-
-

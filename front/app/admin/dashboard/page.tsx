@@ -16,10 +16,25 @@ const adminNavItems = [
 function AdminDashboardContent() {
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Administration</h1>
-        <p className="mt-1 text-muted-foreground">Gestion des cabinets médicaux et base de médicaments</p>
-      </div>
+     
+<div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+  <div className="space-y-2">
+    <p className="text-xs uppercase tracking-[0.28em] text-slate-500">
+      Administration
+    </p>
+
+    <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-[#1d3f24]">
+      Administration
+    </h1>
+
+    <p className="max-w-2xl text-sm md:text-base text-[#1d3f24]/70 leading-relaxed">
+      Gestion des cabinets médicaux et base de médicaments.
+    </p>
+  </div>
+
+  {/* Actions (optionnel) */}
+</div>
+
 
       <Tabs defaultValue="cabinets" className="space-y-6">
         <TabsList className="grid w-full max-w-md grid-cols-2 h-14 p-1 bg-secondary/50 rounded-xl">

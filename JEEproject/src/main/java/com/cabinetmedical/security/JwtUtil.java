@@ -1,3 +1,4 @@
+
 package com.cabinetmedical.security;
 
 import io.jsonwebtoken.Claims;
@@ -32,6 +33,13 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
+    // ✅ AJOUT
+    public String extractRole(String token) {
+        Claims claims = extractAllClaims(token);
+        Object role = claims.get("role");
+        return role == null ? null : role.toString();
+    }
+
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
@@ -45,8 +53,7 @@ public class JwtUtil {
         JwtParser parser = Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build();
-        return parser.parseSignedClaims(token)
-                .getPayload();
+        return parser.parseSignedClaims(token).getPayload();
     }
 
     private Boolean isTokenExpired(String token) {
@@ -76,4 +83,3 @@ public class JwtUtil {
         return (extractedUsername.equals(username) && !isTokenExpired(token));
     }
 }
-

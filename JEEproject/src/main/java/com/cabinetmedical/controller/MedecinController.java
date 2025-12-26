@@ -1,3 +1,4 @@
+
 package com.cabinetmedical.controller;
 
 import com.cabinetmedical.entity.Consultation;
@@ -40,8 +41,21 @@ public class MedecinController {
     @GetMapping("/patients/search")
     public ResponseEntity<List<Patient>> searchPatients(
             @RequestParam Long cabinetId,
-            @RequestParam String search) {
-        return ResponseEntity.ok(patientService.searchPatients(cabinetId, search));
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false, name = "q") String q,
+            @RequestParam(required = false, name = "query") String query
+    ) {
+        // ✅ Accepte plusieurs noms de paramètre côté front (search / q / query)
+        String term = (search != null && !search.isBlank()) ? search
+                : (q != null && !q.isBlank()) ? q
+                : (query != null && !query.isBlank()) ? query
+                : null;
+
+        if (term == null || term.isBlank()) {
+            return ResponseEntity.ok(List.of());
+        }
+
+        return ResponseEntity.ok(patientService.searchPatients(cabinetId, term.trim()));
     }
 
     @GetMapping("/patients/cin/{cin}")
@@ -110,5 +124,3 @@ public class MedecinController {
         return ResponseEntity.ok(dashboardService.getDashboardData(cabinetId, medecinId));
     }
 }
-
-
