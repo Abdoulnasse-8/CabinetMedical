@@ -19,7 +19,7 @@ function SecretaireDashboardContent() {
 
 return (
   <div className="min-h-screen bg-gradient-to-b from-[#f5f7f6] to-[#eef3f1]">
-    <div className="mx-auto max-w-7xl px-6 py-10 space-y-10">
+    <div className="mx-auto max-w-full px-6 py-10 space-y-10">
 
       {/* HEADER */}
       <div className="space-y-2">
@@ -56,7 +56,7 @@ return (
 
               <TabsTrigger
                 value="rendez-vous"
-                className="flex items-center justify-center gap-2 rounded-lg text-sm font-medium text-[#1d3f24]/70 transition-all
+                className="flex items-center justify-center gap-2 rounded-lg text-sm font-medium text-[#1d3f24] transition-all
                   data-[state=active]:bg-white
                   data-[state=active]:text-[#2D4B23]
                   data-[state=active]:shadow-md"
@@ -67,7 +67,7 @@ return (
 
               <TabsTrigger
                 value="factures"
-                className="flex items-center justify-center gap-2 rounded-lg text-sm font-medium text-[#1d3f24]/70 transition-all
+                className="flex items-center justify-center gap-2 rounded-lg text-sm font-medium text-[#1d3f24] transition-all
                   data-[state=active]:bg-white
                   data-[state=active]:text-[#2D4B23]
                   data-[state=active]:shadow-md"
@@ -105,6 +105,7 @@ return (
   </div>
 )
 }
+
 export default function SecretaireDashboardPage() {
   return (
     <ProtectedRoute allowedRoles={["SECRETAIRE"]}>

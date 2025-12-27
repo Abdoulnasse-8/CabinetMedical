@@ -146,8 +146,8 @@ export function FacturesTab() {
           <CardTitle>Liste des Factures</CardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
+              <Button className="bg-[#70e000] text-black hover:font-bold" >
+                <Plus className="mr-1 h-4 w-4" />
                 Nouvelle Facture
               </Button>
             </DialogTrigger>
