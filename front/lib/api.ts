@@ -53,7 +53,9 @@ class ApiClient {
 
     const contentType = response.headers.get("content-type") || ""
     const text = await response.text()
-    
+    if (response.status === 204 || text.trim() === "") {
+  return undefined as unknown as T
+}
 
     if (!response.ok) {
       let message = "Erreur serveur"
