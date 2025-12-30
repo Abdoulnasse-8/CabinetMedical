@@ -39,26 +39,31 @@ export function RendezVousTab() {
     fetchAppointments()
   }, [fetchAppointments])
 
-  const handleCreateRdv = async (data: Partial<RendezVous>) => {
-    try {
-      const newRdv = await api.createRendezVous(data)
-      setAppointments((prev) => [newRdv, ...prev])
-      setIsDialogOpen(false)
-      toast({
-        title: "Succès",
-        description: "Rendez-vous créé avec succès",
-      })
-      return true
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer le rendez-vous",
-        variant: "destructive",
-      })
-      return false
-    }
-  }
 
+const handleCreateRdv = async (data: Partial<RendezVous>) => {
+  try {
+    if (!user?.cabinetId) throw new Error("cabinetId manquant")
+    if (!Number(data.patientId)) return false
+    if (!Number(data.medecinId)) return false 
+    const payload: Partial<RendezVous> = {
+      ...data,
+      cabinetId: user.cabinetId,
+      patientId: Number(data.patientId),
+      medecinId: Number(data.medecinId),
+    }
+
+    console.log("CREATE RDV payload =", payload)
+
+    const newRdv = await api.createRendezVous(payload)
+    setAppointments((prev) => [newRdv, ...prev])
+    setIsDialogOpen(false)
+    toast({ title: "Succès", description: "Rendez-vous créé avec succès" })
+    return true
+  } catch (error) {
+    toast({ title: "Erreur", description: "Impossible de créer le rendez-vous", variant: "destructive" })
+    return false
+  }
+}
   const handleUpdateRdv = async (data: Partial<RendezVous>) => {
     if (!editingRdv) return false
 

@@ -11,6 +11,7 @@ import com.cabinetmedical.entity.Cabinet;
 import com.cabinetmedical.entity.Patient;
 import com.cabinetmedical.entity.RendezVous;
 import com.cabinetmedical.entity.Utilisateur;
+import com.cabinetmedical.enums.Role;
 import com.cabinetmedical.enums.StatutRendezVous;
 import com.cabinetmedical.repository.CabinetRepository;
 import com.cabinetmedical.repository.PatientRepository;
@@ -63,7 +64,13 @@ public List<RendezVous> getAllRendezVous(Long cabinetId) {
 
         Utilisateur medecin = utilisateurRepository.findById(medecinId)
                 .orElseThrow(() -> new RuntimeException("Médecin non trouvé"));
+       if (medecin.getRole() != Role.MEDECIN) { // adapte selon ton enum Role
+    throw new RuntimeException("L'utilisateur sélectionné n'est pas un médecin");
+}
 
+if (medecin.getCabinet() == null || !medecin.getCabinet().getId().equals(cabinetId)) {
+    throw new RuntimeException("Le médecin n'appartient pas à ce cabinet");
+} 
         Cabinet cabinet = cabinetRepository.findById(cabinetId)
                 .orElseThrow(() -> new RuntimeException("Cabinet non trouvé"));
 

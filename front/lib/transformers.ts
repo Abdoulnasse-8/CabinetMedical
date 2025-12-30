@@ -36,14 +36,18 @@ function toIso(dateRdv?: string, heureRdv?: string) {
 }
 // Backend RendezVous format: { idRendezVous, dateRdv (LocalDate), heureRdv (LocalTime), statut, ... }
 // Frontend RendezVous format: { id, dateHeure (ISO string), statut, ... }
+
 export function transformRendezVous(backendRdv: any): RendezVous {
-  // Combine dateRdv and heureRdv into ISO string
   let dateHeure = ""
+
   if (backendRdv.dateRdv && backendRdv.heureRdv) {
-    const date = new Date(`${backendRdv.dateRdv}T${backendRdv.heureRdv}`)
-    dateHeure = date.toISOString()
+    const h = String(backendRdv.heureRdv).slice(0, 8) // "11:53:00"
+    const d = new Date(`${backendRdv.dateRdv}T${h}`)
+    dateHeure = isNaN(d.getTime()) ? "" : d.toISOString()
   } else if (backendRdv.dateHeure) {
-    const dateHeure = backendRdv.dateHeure ?? toIso(backendRdv.dateRdv, backendRdv.heureRdv)
+    dateHeure = backendRdv.dateHeure
+  } else {
+    dateHeure = toIso(backendRdv.dateRdv, backendRdv.heureRdv)
   }
 
   return {
@@ -60,7 +64,6 @@ export function transformRendezVous(backendRdv: any): RendezVous {
     createdAt: backendRdv.createdAt || new Date().toISOString(),
   }
 }
-
 // Backend Facture format: { idFacture, montant (BigDecimal), dateCreation (LocalDateTime), statut: PAYEE|NON_PAYEE|PARTIELLEMENT_PAYEE, ... }
 // Frontend Facture format: { id, montant (number), dateFacture (ISO string), statut: EN_ATTENTE|PAYEE|ANNULEE, ... }
 export function transformFacture(backendFacture: any): Facture {

@@ -222,13 +222,19 @@ class ApiClient {
 
   async createRendezVous(data: Partial<import("@/types").RendezVous>) {
     // Backend expects patientId, medecinId, cabinetId as query params
+    
+    const isDefined = (v: any) => v !== undefined && v !== null && v !== ""
+
     const { patientId, medecinId, cabinetId, ...rdvData } = data as any
     const backendData = transformRendezVousToBackend(rdvData)
     const queryParams = new URLSearchParams()
-    if (patientId) queryParams.append("patientId", patientId.toString())
-    if (medecinId) queryParams.append("medecinId", medecinId.toString())
-    if (cabinetId) queryParams.append("cabinetId", cabinetId.toString())
 
+    if (isDefined(patientId)) queryParams.append("patientId", String(patientId))
+    if (isDefined(medecinId)) queryParams.append("medecinId", String(medecinId))
+    if (isDefined(cabinetId)) queryParams.append("cabinetId", String(cabinetId))
+    if (!isDefined(patientId) || !isDefined(medecinId) || !isDefined(cabinetId)) {
+        throw new Error("patientId / medecinId / cabinetId manquant")
+      }
     const response = await this.request<any>(`/api/secretaire/rendez-vous?${queryParams.toString()}`, {
       method: "POST",
       body: JSON.stringify(backendData),

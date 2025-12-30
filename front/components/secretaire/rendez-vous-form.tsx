@@ -67,7 +67,7 @@ export function RendezVousForm({ rdv, onSubmit }: RendezVousFormProps) {
       ...formData,
       patientId: selectedPatient.id,
       cabinetId: user.cabinetId,
-      medecinId: 1, // In a real app, this would be selected
+      medecinId: 2, // In a real app, this would be selected
       dateHeure: new Date(formData.dateHeure).toISOString(),
     })
     setIsSubmitting(false)
