@@ -86,23 +86,15 @@ const handleCreateRdv = async (data: Partial<RendezVous>) => {
     }
   }
 
-  const handleChangeStatus = async (id: number, statut: RendezVousStatut) => {
-    try {
-      const updated = await api.updateRendezVousStatut(id, statut)
-      setAppointments((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
-      toast({
-        title: "Succès",
-        description: "Statut mis à jour",
-      })
-    } catch (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le statut",
-        variant: "destructive",
-      })
-    }
+const handleChangeStatus = async (id: number, statut: RendezVousStatut) => {
+  try {
+    await api.updateRendezVousStatut(id, statut)
+    await fetchAppointments() // recharge tout avec patient inclus
+    toast({ title: "Succès", description: "Statut mis à jour" })
+  } catch (error) {
+    toast({ title: "Erreur", description: "Impossible de mettre à jour le statut", variant: "destructive" })
   }
-
+}
   const getStatutBadge = (statut: RendezVousStatut) => {
     const config: Record<
       RendezVousStatut,
