@@ -63,7 +63,7 @@ function DoctorDashboardContent() {
     try {
       const [statsData, appointmentsData, patientData] = await Promise.all([
         api.getMedecinDashboard(user.cabinetId, user.id),
-        api.getRendezVousAujourdhui(user.id),
+        api.getRendezVousAujourdhui(),
         api.getPatientEnCours(user.id),
       ])
 

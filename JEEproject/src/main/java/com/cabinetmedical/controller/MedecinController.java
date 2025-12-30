@@ -4,6 +4,9 @@ package com.cabinetmedical.controller;
 import com.cabinetmedical.entity.Consultation;
 import com.cabinetmedical.entity.DossierMedical;
 import com.cabinetmedical.entity.Patient;
+import com.cabinetmedical.entity.RendezVous;
+import com.cabinetmedical.entity.Utilisateur;
+import com.cabinetmedical.repository.UtilisateurRepository;
 import com.cabinetmedical.service.ConsultationService;
 import com.cabinetmedical.service.DashboardService;
 import com.cabinetmedical.service.DossierMedicalService;
@@ -14,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.core.Authentication;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +25,9 @@ import java.util.Map;
 @RequestMapping("/api/medecin")
 @CrossOrigin(origins = "*")
 public class MedecinController {
+
+ @Autowired
+    private UtilisateurRepository utilisateurRepository;
 
     @Autowired
     private PatientService patientService;
@@ -108,15 +115,13 @@ public class MedecinController {
             @RequestBody Consultation consultation) {
         return ResponseEntity.ok(consultationService.updateConsultation(id, consultation));
     }
-
-    // Rendez-vous du jour
-    @GetMapping("/rendez-vous/aujourdhui")
-    public ResponseEntity<List<com.cabinetmedical.entity.RendezVous>> getTodayRendezVous(
-            @RequestParam Long medecinId) {
-        return ResponseEntity.ok(rendezVousService.getTodayRendezVousByMedecin(medecinId));
-    }
-
-    // Dashboard
+@GetMapping("/rendez-vous/aujourdhui")
+public ResponseEntity<List<RendezVous>> getTodayRendezVous(Authentication auth) {
+    String login = auth.getName();
+    Utilisateur medecin = utilisateurRepository.findByLogin(login)
+        .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+    return ResponseEntity.ok(rendezVousService.getTodayRendezVousByMedecin(medecin.getId()));
+}// Dashboard
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getDashboard(
             @RequestParam Long cabinetId,

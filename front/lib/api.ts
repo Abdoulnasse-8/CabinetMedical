@@ -116,8 +116,8 @@ class ApiClient {
     )
   }
 
-  async getRendezVousAujourdhui(medecinId: number) {
-    const data = await this.request<any[]>(`/api/medecin/rendez-vous/aujourdhui?medecinId=${medecinId}`)
+  async getRendezVousAujourdhui() {
+    const data = await this.request<any[]>(`/api/medecin/rendez-vous/aujourdhui`)
     return data.map(transformRendezVous)
   }
 

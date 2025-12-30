@@ -106,7 +106,7 @@ function PatientPageContent() {
       const newConsultation = await api.createConsultation({
         ...consultation,
         patientId,
-        medecinId: user.id,
+        medecinId: 1,
       })
       setConsultations((prev) => [newConsultation, ...prev])
       setActiveTab("historique")

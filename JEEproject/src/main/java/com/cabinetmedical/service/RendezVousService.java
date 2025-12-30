@@ -1,5 +1,12 @@
 package com.cabinetmedical.service;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.cabinetmedical.entity.Cabinet;
 import com.cabinetmedical.entity.Patient;
 import com.cabinetmedical.entity.RendezVous;
@@ -9,12 +16,6 @@ import com.cabinetmedical.repository.CabinetRepository;
 import com.cabinetmedical.repository.PatientRepository;
 import com.cabinetmedical.repository.RendezVousRepository;
 import com.cabinetmedical.repository.UtilisateurRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Service
 public class RendezVousService {
@@ -31,9 +32,7 @@ public class RendezVousService {
     @Autowired
     private CabinetRepository cabinetRepository;
 
-    public List<RendezVous> getAllRendezVous(Long cabinetId) {
-        return rendezVousRepository.findByCabinetId(cabinetId);
-    }
+
 
     public List<RendezVous> getRendezVousByPatient(Long patientId) {
         return rendezVousRepository.findByPatientId(patientId);
@@ -42,10 +41,15 @@ public class RendezVousService {
     public List<RendezVous> getRendezVousByMedecin(Long medecinId) {
         return rendezVousRepository.findByMedecinId(medecinId);
     }
+public List<RendezVous> getTodayRendezVousByMedecin(Long medecinId) {
+    return rendezVousRepository.findTodayRendezVousByMedecinWithDetails(LocalDate.now(), medecinId);
+}
 
-    public List<RendezVous> getTodayRendezVousByMedecin(Long medecinId) {
-        return rendezVousRepository.findTodayRendezVousByMedecin(LocalDate.now(), medecinId);
-    }
+
+public List<RendezVous> getAllRendezVous(Long cabinetId) {
+    return rendezVousRepository.findByCabinetIdWithDetails(cabinetId);
+}
+
 
     public RendezVous getRendezVousById(Long id) {
         return rendezVousRepository.findById(id)

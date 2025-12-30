@@ -26,6 +26,14 @@ export function transformPatient(backendPatient: any): Patient {
   }
 }
 
+function toIso(dateRdv?: string, heureRdv?: string) {
+  if (!dateRdv) return ""
+  if (!heureRdv) return `${dateRdv}T00:00:00.000Z`
+  // garder HH:mm:ss uniquement
+  const h = String(heureRdv).slice(0, 8) // "11:53:00"
+  const d = new Date(`${dateRdv}T${h}`)
+  return isNaN(d.getTime()) ? "" : d.toISOString()
+}
 // Backend RendezVous format: { idRendezVous, dateRdv (LocalDate), heureRdv (LocalTime), statut, ... }
 // Frontend RendezVous format: { id, dateHeure (ISO string), statut, ... }
 export function transformRendezVous(backendRdv: any): RendezVous {
@@ -35,7 +43,7 @@ export function transformRendezVous(backendRdv: any): RendezVous {
     const date = new Date(`${backendRdv.dateRdv}T${backendRdv.heureRdv}`)
     dateHeure = date.toISOString()
   } else if (backendRdv.dateHeure) {
-    dateHeure = backendRdv.dateHeure
+    const dateHeure = backendRdv.dateHeure ?? toIso(backendRdv.dateRdv, backendRdv.heureRdv)
   }
 
   return {

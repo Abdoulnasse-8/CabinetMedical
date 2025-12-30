@@ -39,12 +39,10 @@ public class RendezVous {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id", nullable = false)
-    @JsonIgnore
     private Patient patient;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medecin_id", nullable = false)
-    @JsonIgnore
     private Utilisateur medecin;
 
     @ManyToOne(fetch = FetchType.LAZY)

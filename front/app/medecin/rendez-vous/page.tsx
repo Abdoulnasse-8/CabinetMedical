@@ -22,23 +22,25 @@ function RendezVousContent() {
   const [appointments, setAppointments] = useState<RendezVous[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  const fetchAppointments = useCallback(async () => {
-    if (!user?.id) return
 
+useEffect(() => {
+  const run = async () => {
+    if (!user) return // ou !user?.id pour attendre le chargement auth
+
+    setIsLoading(true)
     try {
-      const data = await api.getRendezVousAujourdhui(user.id)
+      const data = await api.getRendezVousAujourdhui()
       setAppointments(data)
-    } catch (error) {
-      console.error("[v0] Error fetching appointments:", error)
+    } catch (e) {
+      console.error("Error fetching appointments:", e)
+      setAppointments([])
     } finally {
       setIsLoading(false)
     }
-  }, [user])
+  }
 
-  useEffect(() => {
-    fetchAppointments()
-  }, [fetchAppointments])
-
+  run()
+}, [user])
   const getStatutBadge = (statut: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       CONFIRME: "default",
@@ -127,12 +129,16 @@ return (
                       <p className="font-medium text-[#1d3f24]">
                         {rdv.patient?.prenom} {rdv.patient?.nom}
                       </p>
-                      <p className="text-sm text-slate-500">
-                        {new Date(rdv.dateHeure).toLocaleTimeString("fr-FR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </p>
+                      {(() => {
+  const t = rdv.dateHeure ? new Date(rdv.dateHeure) : null
+  const ok = t && !isNaN(t.getTime())
+  return (
+    <p className="text-sm text-slate-500">
+      {ok ? t!.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }) : "--:--"}
+    </p>
+  )
+})()}
+
                       {rdv.motif && (
                         <p className="text-sm text-slate-500">
                           {rdv.motif}
