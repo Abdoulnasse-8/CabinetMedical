@@ -32,8 +32,9 @@ function DropdownMenuTrigger({
 }
 
 function DropdownMenuContent({
-  className,
-  sideOffset = 4,
+  className="w-52 translate-x-2",
+  sideOffset = 0,
+  align= "end",
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   return (

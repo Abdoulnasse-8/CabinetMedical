@@ -6,13 +6,12 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.security.core.Authentication;
 import com.cabinetmedical.entity.RendezVous;
 import com.cabinetmedical.entity.Utilisateur;
 import com.cabinetmedical.enums.Role;
@@ -27,16 +26,26 @@ public class NotificationController {
 
     @Autowired
     private RendezVousService rendezVousService;
+    
+@GetMapping("/rendez-vous/aujourdhui")
+public ResponseEntity<Map<String, Object>> getTodayRendezVous(Authentication auth) {
+    String login = auth.getName();
 
-    @GetMapping("/rendez-vous/aujourdhui")
-    public ResponseEntity<Map<String, Object>> getTodayRendezVous(@RequestParam Long medecinId) {
-        List<RendezVous> rendezVous = rendezVousService.getTodayRendezVousByMedecin(medecinId);
-        Map<String, Object> response = new HashMap<>();
-        response.put("count", rendezVous.size());
-        response.put("rendezVous", rendezVous);
-        return ResponseEntity.ok(response);
+    Utilisateur u = utilisateurRepository.findByLogin(login)
+            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+    if (u.getRole() != Role.MEDECIN) {
+        throw new RuntimeException("Accès réservé au médecin");
     }
-/* 
+
+    Long medecinId = u.getId();
+    List<RendezVous> rdvs = rendezVousService.getTodayRendezVousByMedecin(medecinId);
+
+    Map<String, Object> res = new HashMap<>();
+    res.put("count", rdvs.size());
+    res.put("rendezVous", rdvs);
+    return ResponseEntity.ok(res);
+}/* 
     @GetMapping("/patient-en-cours")
     public ResponseEntity<Map<String, Object>> getPatientEnCours(@RequestParam Long medecinId) {
         List<RendezVous> rendezVous = rendezVousService.getTodayRendezVousByMedecin(medecinId);
@@ -57,6 +66,56 @@ public class NotificationController {
 
         return ResponseEntity.ok(response);
     } */
+    @GetMapping("/summary")
+public ResponseEntity<Map<String, Object>> summary(Authentication auth) {
+
+    String login = auth.getName();
+    Utilisateur u = utilisateurRepository.findByLogin(login)
+            .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+    Map<String, Object> res = new HashMap<>();
+    res.put("role", u.getRole().name());
+
+    if (u.getRole() == Role.MEDECIN) {
+        Long medecinId = u.getId();
+        List<RendezVous> rdvs = rendezVousService.getTodayRendezVousByMedecin(medecinId);
+
+        res.put("count", rdvs.size());
+        res.put("rendezVous", rdvs);
+
+        RendezVous prochain = rdvs.stream()
+                .filter(r -> r.getStatut() == StatutRendezVous.EN_ATTENTE || r.getStatut() == StatutRendezVous.CONFIRME)
+                .findFirst()
+                .orElse(null);
+
+        res.put("patientLabel", prochain != null && prochain.getPatient() != null
+                ? prochain.getPatient().getPrenom() + " " + prochain.getPatient().getNom()
+                : "Aucun");
+
+        return ResponseEntity.ok(res);
+    }
+
+    if (u.getRole() == Role.SECRETAIRE) {
+        if (u.getCabinet() == null) throw new RuntimeException("Cabinet manquant");
+        Long cabinetId = u.getCabinet().getId();
+
+        // ✅ il faut cette méthode (voir étape 2)
+        List<RendezVous> rdvs = rendezVousService.getTodayRendezVousByCabinet(cabinetId);
+
+        long enAttente = rdvs.stream().filter(r -> r.getStatut() == StatutRendezVous.EN_ATTENTE).count();
+
+        res.put("count", rdvs.size());
+        res.put("enAttente", enAttente);
+        res.put("rendezVous", rdvs);
+
+        return ResponseEntity.ok(res);
+    }
+
+    res.put("count", 0);
+    res.put("rendezVous", List.of());
+    return ResponseEntity.ok(res);
+}
+
     @Autowired private UtilisateurRepository utilisateurRepository;
 
     @GetMapping("/patient-en-cours")

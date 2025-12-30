@@ -4,7 +4,7 @@
 import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname,useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -32,6 +32,9 @@ import {
   ChevronRight,
   Bell,
 } from "lucide-react";
+import { NotificationBell } from "../notifications/notification-bell";
+
+
 
 interface NavItem {
   title: string;
@@ -45,6 +48,7 @@ interface DashboardLayoutProps {
 }
 
 export function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
+  const router =useRouter();
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -193,14 +197,7 @@ export function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative hover:bg-slate-100"
-            >
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#70e000] ring-2 ring-white" />
-            </Button>
+            <NotificationBell />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -220,7 +217,7 @@ export function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-semibold text-slate-900">
@@ -232,7 +229,7 @@ export function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
+                <DropdownMenuItem className="cursor-pointer" onSelect={() => router.push("/profile")}>
                   <UserCircle className="mr-2 h-4 w-4" />
                   Mon profil
                 </DropdownMenuItem>

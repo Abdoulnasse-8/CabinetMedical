@@ -111,6 +111,10 @@ if (medecin.getCabinet() == null || !medecin.getCabinet().getId().equals(cabinet
     public void deleteRendezVous(Long id) {
         rendezVousRepository.deleteById(id);
     }
+    public List<RendezVous> getTodayRendezVousByCabinet(Long cabinetId) {
+    return rendezVousRepository.findTodayByCabinet(cabinetId, LocalDate.now());
+}
+
 }
 
 

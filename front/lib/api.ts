@@ -335,6 +335,25 @@ class ApiClient {
       body: JSON.stringify(medicaments),
     })
   }
+  async getMyProfile() {
+  return this.request<any>(`/api/users/me`)
 }
+
+async updateMyProfile(data: { nom: string; prenom: string }) {
+  return this.request<any>(`/api/users/me`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  })
+}
+
+async getNotifToday() {
+  return this.request<{ count: number; rendezVous: any[] }>(`/api/notifications/rendez-vous/aujourdhui`)
+}
+async getNotificationsSummary() {
+  return this.request<any>(`/api/notifications/summary`)
+}
+async getNotifPatientEnCours() {
+  return this.request<{ patientEnCours: any | null; rendezVous: any | null }>(`/api/notifications/patient-en-cours`)
+}}
 
 export const api = new ApiClient()

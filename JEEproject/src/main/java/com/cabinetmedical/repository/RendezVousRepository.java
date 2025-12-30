@@ -19,6 +19,15 @@ public interface RendezVousRepository extends JpaRepository<RendezVous, Long> {
     List<RendezVous> findByCabinetId(Long cabinetId);
     List<RendezVous> findByDateRdvAndMedecinId(LocalDate date, Long medecinId);
     List<RendezVous> findByStatut(StatutRendezVous statut);
+  @Query("""
+  select r from RendezVous r
+  join fetch r.patient p
+  join fetch r.medecin m
+  where r.cabinet.id = :cabinetId
+  and r.dateRdv = :today
+""")
+List<RendezVous> findTodayByCabinet(@Param("cabinetId") Long cabinetId, @Param("today") LocalDate today);
+
 
     @Query("SELECT r FROM RendezVous r WHERE r.dateRdv = :date AND r.medecin.id = :medecinId " +
            "AND r.heureRdv = :heure AND r.statut != 'ANNULE'")

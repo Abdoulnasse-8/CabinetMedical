@@ -1,3 +1,4 @@
+
 "use client"
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react"
@@ -13,6 +14,7 @@ interface AuthContextType {
   logout: () => void
   isAuthenticated: boolean
   hasRole: (roles: UserRole | UserRole[]) => boolean
+  updateUser: (patch: Partial<User>) => void // ✅ ajouté
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -24,7 +26,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    // Vérifier que nous sommes côté client
     if (typeof window === "undefined") {
       setIsLoading(false)
       return
@@ -35,17 +36,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedUser = localStorage.getItem("user")
 
       if (storedToken && storedUser) {
-        try {
-          setToken(storedToken)
-          setUser(JSON.parse(storedUser))
-        } catch (parseError) {
-          console.error("Error parsing stored user:", parseError)
-          localStorage.removeItem("token")
-          localStorage.removeItem("user")
-        }
+        setToken(storedToken)
+        setUser(JSON.parse(storedUser))
       }
     } catch (error) {
       console.error("Error accessing localStorage:", error)
+      localStorage.removeItem("token")
+      localStorage.removeItem("user")
     } finally {
       setIsLoading(false)
     }
@@ -61,7 +58,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(response.token)
       setUser(response.user)
 
-      // Redirect based on role
       switch (response.user.role) {
         case "ADMINISTRATEUR":
           router.push("/admin/dashboard")
@@ -96,6 +92,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user],
   )
 
+  // ✅ IMPORTANT: updateUser doit être ICI (dans le provider)
+  const updateUser = useCallback((patch: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return prev
+      const next = { ...prev, ...patch }
+      localStorage.setItem("user", JSON.stringify(next))
+      return next
+    })
+  }, [])
+
   return (
     <AuthContext.Provider
       value={{
@@ -106,6 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         isAuthenticated: !!token && !!user,
         hasRole,
+        updateUser, // ✅ on passe la fonction (sans parenthèses)
       }}
     >
       {children}

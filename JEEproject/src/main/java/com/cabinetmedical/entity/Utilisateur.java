@@ -1,6 +1,8 @@
 package com.cabinetmedical.entity;
 
 import com.cabinetmedical.enums.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,7 +22,7 @@ public class Utilisateur {
 
     @Column(name = "login", unique = true, nullable = false)
     private String login;
-
+    @JsonIgnore
     @Column(name = "pwd", nullable = false)
     private String pwd;
 
