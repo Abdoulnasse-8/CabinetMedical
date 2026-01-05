@@ -20,7 +20,11 @@ import java.util.List;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
-
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth/");
+    }
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
