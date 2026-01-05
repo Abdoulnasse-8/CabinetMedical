@@ -188,7 +188,7 @@ Password: password
 #### Compte Médecin
 ```
 Login: medecin1
-Password: password
+Password: medecin1
 ```
 → Devrait rediriger vers `/medecin/dashboard`
 
