@@ -1,0 +1,103 @@
+@startuml Diagramme_Sequence_Creation_Rendez_Vous
+
+!define ACTOR_COLOR #E3F2FD
+!define SYSTEM_COLOR #E8F5E9
+!define DATABASE_COLOR #FFF9C4
+
+skinparam participant {
+  BackgroundColor ACTOR_COLOR
+  BorderColor #1976D2
+}
+
+skinparam database {
+  BackgroundColor DATABASE_COLOR
+  BorderColor #F57C00
+}
+
+actor "Secrétaire" as Secretaire
+participant "Frontend" as Frontend SYSTEM_COLOR
+participant "RendezVousController" as Controller SYSTEM_COLOR
+participant "RendezVousService" as Service SYSTEM_COLOR
+participant "PatientRepository" as PatientRepo
+participant "UtilisateurRepository" as UserRepo
+participant "CabinetRepository" as CabinetRepo
+participant "RendezVousRepository" as RendezVousRepo
+database "Base de Données" as DB DATABASE_COLOR
+
+Secretaire -> Frontend: Remplit le formulaire de rendez-vous
+activate Frontend
+
+Frontend -> Controller: POST /api/secretaire/rendez-vous\n?patientId=X&medecinId=Y&cabinetId=Z
+activate Controller
+
+Controller -> Service: createRendezVous(rendezVous, patientId, medecinId, cabinetId)
+activate Service
+
+Service -> PatientRepo: findById(patientId)
+activate PatientRepo
+PatientRepo -> DB: SELECT * FROM patients WHERE id = ?
+activate DB
+DB --> PatientRepo: Patient
+deactivate DB
+PatientRepo --> Service: Patient
+deactivate PatientRepo
+
+Service -> UserRepo: findById(medecinId)
+activate UserRepo
+UserRepo -> DB: SELECT * FROM utilisateurs WHERE id = ?
+activate DB
+DB --> UserRepo: Utilisateur (médecin)
+deactivate DB
+UserRepo --> Service: Médecin
+deactivate UserRepo
+
+Service -> CabinetRepo: findById(cabinetId)
+activate CabinetRepo
+CabinetRepo -> DB: SELECT * FROM cabinets WHERE id = ?
+activate DB
+DB --> CabinetRepo: Cabinet
+deactivate DB
+CabinetRepo --> Service: Cabinet
+deactivate CabinetRepo
+
+Service -> Service: Vérifier que patient et médecin\nappartiennent au même cabinet
+
+Service -> RendezVousRepo: findConflictingRendezVous(date, heure, medecinId)
+activate RendezVousRepo
+RendezVousRepo -> DB: SELECT * FROM rendez_vous WHERE date_rdv=? AND heure_rdv=? AND medecin_id=?
+activate DB
+DB --> RendezVousRepo: List<RendezVous>
+deactivate DB
+RendezVousRepo --> Service: Liste des conflits
+deactivate RendezVousRepo
+
+alt Aucun conflit trouvé
+  Service -> RendezVousRepo: save(rendezVous)
+  activate RendezVousRepo
+  RendezVousRepo -> DB: INSERT INTO rendez_vous (date_rdv, heure_rdv, motif, statut, patient_id, medecin_id, cabinet_id) VALUES (...)
+  activate DB
+  DB --> RendezVousRepo: RendezVous créé
+  deactivate DB
+  RendezVousRepo --> Service: RendezVous
+  deactivate RendezVousRepo
+
+  Service --> Controller: RendezVous créé
+else Conflit détecté
+  Service --> Controller: RuntimeException("Créneau non disponible")
+  Controller --> Frontend: 400 Bad Request
+  Frontend --> Secretaire: Message d'erreur
+end
+
+deactivate Service
+
+Controller --> Frontend: 201 Created\nRendezVous
+deactivate Controller
+
+Frontend -> Frontend: Rafraîchir la liste des rendez-vous
+Frontend -> Frontend: Afficher message de succès
+
+Frontend --> Secretaire: Rendez-vous créé avec succès
+deactivate Frontend
+
+@enduml
+

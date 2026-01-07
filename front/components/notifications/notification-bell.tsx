@@ -6,6 +6,8 @@ import { api } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Bell, Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 
 type Summary =
   | {
@@ -29,9 +31,12 @@ type Summary =
   | any
 
 export function NotificationBell() {
+  const router = useRouter()
+  const { user } = useAuth()
   const [count, setCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const [summary, setSummary] = useState<Summary | null>(null)
+  const [patientEnCours, setPatientEnCours] = useState<any | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -39,12 +44,23 @@ export function NotificationBell() {
       const s = await api.getNotificationsSummary()
       setSummary(s)
       setCount(Number(s?.count ?? 0))
+
+      // Charger le patient en cours pour les médecins
+      if (user?.role === "MEDECIN" && user?.id) {
+        try {
+          const patientData = await api.getPatientEnCours(user.id)
+          setPatientEnCours(patientData)
+        } catch (e) {
+          console.log("Error loading patient en cours:", e)
+          setPatientEnCours(null)
+        }
+      }
     } catch (e) {
       console.log("notif error", e)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [user?.role, user?.id])
 
   useEffect(() => {
     load()
@@ -71,10 +87,16 @@ export function NotificationBell() {
   }, [role])
 
   const line1Value = useMemo(() => {
-    if (role === "MEDECIN") return summary?.patientLabel ?? "Aucun"
+    if (role === "MEDECIN") {
+      // Prioriser le patient en cours depuis l'API dédiée
+      if (patientEnCours) {
+        return `${patientEnCours.prenom} ${patientEnCours.nom}`
+      }
+      return summary?.patientLabel ?? "Aucun"
+    }
     if (role === "SECRETAIRE") return String(summary?.enAttente ?? 0)
     return "—"
-  }, [role, summary])
+  }, [role, summary, patientEnCours])
 
   const line2Value = useMemo(() => {
     // compteur RDV du jour (médecin ou cabinet)
@@ -125,24 +147,36 @@ export function NotificationBell() {
 
         <div className="h-px bg-slate-200" />
 
-        {/* Ligne 1 */}
-        <button
-          type="button"
-          className="w-full px-3 py-2 text-left hover:bg-slate-50 transition flex items-start justify-between gap-3"
-          onClick={load}
-        >
-          <div className="min-w-0">
-            <p className="text-xs text-slate-500">{line1Label}</p>
-            <p className="text-sm font-medium text-slate-900 truncate">{line1Value}</p>
-          </div>
-
-          {/* Heure si médecin et prochain RDV dispo */}
-          <span className="text-xs text-slate-500 whitespace-nowrap">
-            {role === "MEDECIN" && summary?.prochainRdv?.heureRdv
-              ? String(summary.prochainRdv.heureRdv).slice(0, 5)
-              : ""}
-          </span>
-        </button>
+        {/* Ligne 1 - Patient en cours pour médecin */}
+        {role === "MEDECIN" && patientEnCours ? (
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left hover:bg-slate-50 transition flex items-start justify-between gap-3"
+            onClick={() => router.push(`/medecin/patient/${patientEnCours.id}`)}
+          >
+            <div className="min-w-0">
+              <p className="text-xs text-slate-500">{line1Label}</p>
+              <p className="text-sm font-medium text-slate-900 truncate">{line1Value}</p>
+            </div>
+            <span className="text-xs text-slate-500 whitespace-nowrap">Consulter →</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="w-full px-3 py-2 text-left hover:bg-slate-50 transition flex items-start justify-between gap-3"
+            onClick={load}
+          >
+            <div className="min-w-0">
+              <p className="text-xs text-slate-500">{line1Label}</p>
+              <p className="text-sm font-medium text-slate-900 truncate">{line1Value}</p>
+            </div>
+            <span className="text-xs text-slate-500 whitespace-nowrap">
+              {role === "MEDECIN" && summary?.prochainRdv?.heureRdv
+                ? String(summary.prochainRdv.heureRdv).slice(0, 5)
+                : ""}
+            </span>
+          </button>
+        )}
 
         <div className="h-px bg-slate-200" />
 

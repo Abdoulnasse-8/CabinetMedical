@@ -1,0 +1,191 @@
+@startuml Diagramme_Cas_Utilisation
+
+!define ACTOR_COLOR #E3F2FD
+!define USE_CASE_COLOR #E8F5E9
+!define SYSTEM_COLOR #FFF9C4
+
+skinparam actor {
+  BackgroundColor ACTOR_COLOR
+  BorderColor #1976D2
+}
+
+skinparam usecase {
+  BackgroundColor USE_CASE_COLOR
+  BorderColor #388E3C
+}
+
+skinparam rectangle {
+  BackgroundColor SYSTEM_COLOR
+  BorderColor #F57C00
+}
+
+' ============================================
+' ACTEURS
+' ============================================
+actor "Administrateur" as Admin ACTOR_COLOR
+actor "Médecin" as Medecin ACTOR_COLOR
+actor "Secrétaire" as Secretaire ACTOR_COLOR
+
+' ============================================
+' SYSTÈME
+' ============================================
+rectangle "Système de Gestion\nCabinet Médical" as System {
+
+  ' ============================================
+  ' CAS D'UTILISATION - ADMINISTRATEUR
+  ' ============================================
+  package "Gestion Administrative" {
+    usecase "Gérer les cabinets médicaux" as UC01
+    usecase "Créer un cabinet" as UC02
+    usecase "Modifier un cabinet" as UC03
+    usecase "Supprimer un cabinet" as UC04
+    usecase "Activer/Désactiver un cabinet" as UC05
+    usecase "Gérer les utilisateurs" as UC06
+    usecase "Créer un utilisateur" as UC07
+    usecase "Modifier un utilisateur" as UC08
+    usecase "Supprimer un utilisateur" as UC09
+    usecase "Intégrer la liste des médicaments" as UC10
+    usecase "Ajouter médicaments en lot" as UC11
+    usecase "Exporter la liste des médicaments" as UC12
+  }
+
+  ' ============================================
+  ' CAS D'UTILISATION - MÉDECIN
+  ' ============================================
+  package "Gestion Médicale" {
+    usecase "Consulter le tableau de bord" as UC13
+    usecase "Rechercher un patient" as UC14
+    usecase "Consulter le profil patient" as UC15
+    usecase "Consulter le dossier médical" as UC16
+    usecase "Modifier le dossier médical" as UC17
+    usecase "Consulter l'historique des consultations" as UC18
+    usecase "Créer une consultation" as UC19
+    usecase "Imprimer ordonnance médicaments" as UC20
+    usecase "Imprimer ordonnance examens" as UC21
+    usecase "Consulter les rendez-vous" as UC22
+    usecase "Recevoir notification patient en cours" as UC23
+  }
+
+  ' ============================================
+  ' CAS D'UTILISATION - SECRÉTAIRE
+  ' ============================================
+  package "Gestion Secrétariale" {
+    usecase "Gérer les patients" as UC24
+    usecase "Créer un patient" as UC25
+    usecase "Modifier un patient" as UC26
+    usecase "Supprimer un patient" as UC27
+    usecase "Rechercher un patient par CIN" as UC28
+    usecase "Rechercher un patient par nom" as UC29
+    usecase "Envoyer patient en cours au médecin" as UC30
+    usecase "Gérer les rendez-vous" as UC31
+    usecase "Créer un rendez-vous" as UC32
+    usecase "Modifier un rendez-vous" as UC33
+    usecase "Annuler un rendez-vous" as UC34
+    usecase "Confirmer un rendez-vous" as UC35
+    usecase "Gérer la facturation" as UC36
+    usecase "Créer une facture" as UC37
+    usecase "Valider le paiement" as UC38
+    usecase "Imprimer une facture" as UC39
+    usecase "Consulter les alertes" as UC40
+  }
+
+  ' ============================================
+  ' CAS D'UTILISATION - COMMUNS
+  ' ============================================
+  package "Authentification" {
+    usecase "Se connecter" as UC41
+    usecase "Se déconnecter" as UC42
+    usecase "Modifier son profil" as UC43
+  }
+}
+
+' ============================================
+' RELATIONS ADMINISTRATEUR
+' ============================================
+Admin --> UC01
+Admin --> UC02
+Admin --> UC03
+Admin --> UC04
+Admin --> UC05
+Admin --> UC06
+Admin --> UC07
+Admin --> UC08
+Admin --> UC09
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+Admin --> UC41
+Admin --> UC42
+
+UC01 ..> UC02 : <<include>>
+UC01 ..> UC03 : <<include>>
+UC01 ..> UC04 : <<include>>
+UC01 ..> UC05 : <<include>>
+UC06 ..> UC07 : <<include>>
+UC06 ..> UC08 : <<include>>
+UC06 ..> UC09 : <<include>>
+
+' ============================================
+' RELATIONS MÉDECIN
+' ============================================
+Medecin --> UC13
+Medecin --> UC14
+Medecin --> UC15
+Medecin --> UC16
+Medecin --> UC17
+Medecin --> UC18
+Medecin --> UC19
+Medecin --> UC20
+Medecin --> UC21
+Medecin --> UC22
+Medecin --> UC23
+Medecin --> UC41
+Medecin --> UC42
+Medecin --> UC43
+
+UC15 ..> UC16 : <<include>>
+UC15 ..> UC18 : <<include>>
+UC19 ..> UC20 : <<extend>> si médicaments
+UC19 ..> UC21 : <<extend>> si examens
+UC14 ..> UC15 : <<include>>
+UC23 ..> UC15 : <<include>>
+
+' ============================================
+' RELATIONS SECRÉTAIRE
+' ============================================
+Secretaire --> UC24
+Secretaire --> UC25
+Secretaire --> UC26
+Secretaire --> UC27
+Secretaire --> UC28
+Secretaire --> UC29
+Secretaire --> UC30
+Secretaire --> UC31
+Secretaire --> UC32
+Secretaire --> UC33
+Secretaire --> UC34
+Secretaire --> UC35
+Secretaire --> UC36
+Secretaire --> UC37
+Secretaire --> UC38
+Secretaire --> UC39
+Secretaire --> UC40
+Secretaire --> UC41
+Secretaire --> UC42
+Secretaire --> UC43
+
+UC24 ..> UC25 : <<include>>
+UC24 ..> UC26 : <<include>>
+UC24 ..> UC27 : <<include>>
+UC28 ..> UC30 : <<include>>
+UC29 ..> UC30 : <<include>>
+UC31 ..> UC32 : <<include>>
+UC31 ..> UC33 : <<include>>
+UC31 ..> UC34 : <<include>>
+UC31 ..> UC35 : <<include>>
+UC36 ..> UC37 : <<include>>
+UC36 ..> UC38 : <<include>>
+UC36 ..> UC39 : <<include>>
+
+@enduml
+

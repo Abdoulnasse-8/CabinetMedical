@@ -20,14 +20,12 @@ export function DossierMedicalTab({ dossier, onUpdate }: DossierMedicalTabProps)
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [formData, setFormData] = useState<Partial<DossierMedical>>({
-    groupeSanguin: dossier?.groupeSanguin || "",
+    antMedicaux: dossier?.antMedicaux || "",
     allergies: dossier?.allergies || "",
-    antecedentsMedicaux: dossier?.antecedentsMedicaux || "",
-    antecedentsChirurgicaux: dossier?.antecedentsChirurgicaux || "",
-    antecedentsFamiliaux: dossier?.antecedentsFamiliaux || "",
-    traitementEnCours: dossier?.traitementEnCours || "",
+    antChirug: dossier?.antChirug || "",
+    traitement: dossier?.traitement || "",
     habitudes: dossier?.habitudes || "",
-    notes: dossier?.notes || "",
+    documentsMedicaux: dossier?.documentsMedicaux || "",
   })
 
   const handleSave = async () => {
@@ -52,27 +50,23 @@ export function DossierMedicalTab({ dossier, onUpdate }: DossierMedicalTabProps)
 
   const handleCancel = () => {
     setFormData({
-      groupeSanguin: dossier?.groupeSanguin || "",
+      antMedicaux: dossier?.antMedicaux || "",
       allergies: dossier?.allergies || "",
-      antecedentsMedicaux: dossier?.antecedentsMedicaux || "",
-      antecedentsChirurgicaux: dossier?.antecedentsChirurgicaux || "",
-      antecedentsFamiliaux: dossier?.antecedentsFamiliaux || "",
-      traitementEnCours: dossier?.traitementEnCours || "",
+      antChirug: dossier?.antChirug || "",
+      traitement: dossier?.traitement || "",
       habitudes: dossier?.habitudes || "",
-      notes: dossier?.notes || "",
+      documentsMedicaux: dossier?.documentsMedicaux || "",
     })
     setIsEditing(false)
   }
 
   const fields = [
-    { key: "groupeSanguin", label: "Groupe Sanguin", type: "input" },
+    { key: "antMedicaux", label: "Antécédents Médicaux", type: "textarea" },
+    { key: "antChirug", label: "Antécédents Chirurgicaux", type: "textarea" },
     { key: "allergies", label: "Allergies", type: "textarea" },
-    { key: "antecedentsMedicaux", label: "Antécédents Médicaux", type: "textarea" },
-    { key: "antecedentsChirurgicaux", label: "Antécédents Chirurgicaux", type: "textarea" },
-    { key: "antecedentsFamiliaux", label: "Antécédents Familiaux", type: "textarea" },
-    { key: "traitementEnCours", label: "Traitement en Cours", type: "textarea" },
-    { key: "habitudes", label: "Habitudes (tabac, alcool, etc.)", type: "textarea" },
-    { key: "notes", label: "Notes", type: "textarea" },
+    { key: "traitement", label: "Traitement en Cours", type: "textarea" },
+    { key: "habitudes", label: "Habitudes (tabac, alimentation, sommeil, etc.)", type: "textarea" },
+    { key: "documentsMedicaux", label: "Documents Médicaux (analyses, radios, bilans)", type: "textarea" },
   ] as const
 
   return (

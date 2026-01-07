@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import type { Consultation, Patient, User } from "@/types"
 import { Calendar, Printer, FileText } from "lucide-react"
-import { OrdonnancePrint } from "@/components/medecin/ordonnance-print"
+import { OrdonnanceMedicaments } from "@/components/medecin/ordonnance-medicaments"
+import { OrdonnanceExamens } from "@/components/medecin/ordonnance-examens"
 
 interface ConsultationHistoryTabProps {
   consultations: Consultation[]
@@ -16,11 +17,6 @@ interface ConsultationHistoryTabProps {
 }
 
 export function ConsultationHistoryTab({ consultations, patient, medecin }: ConsultationHistoryTabProps) {
-  const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null)
-
-  const handlePrint = (consultation: Consultation) => {
-    setSelectedConsultation(consultation)
-  }
 
   if (consultations.length === 0) {
     return (
@@ -56,22 +52,48 @@ export function ConsultationHistoryTab({ consultations, patient, medecin }: Cons
                   </Badge>
                 </div>
               </div>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => handlePrint(consultation)}>
-                    <Printer className="mr-2 h-4 w-4" />
-                    Imprimer
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
-                  <DialogHeader>
-                    <DialogTitle>Ordonnance</DialogTitle>
-                  </DialogHeader>
-                  {selectedConsultation && (
-                    <OrdonnancePrint consultation={selectedConsultation} patient={patient} medecin={medecin} />
-                  )}
-                </DialogContent>
-              </Dialog>
+              <div className="flex gap-2">
+                {consultation.traitement && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Printer className="mr-2 h-4 w-4" />
+                        Ordonnance Médicaments
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+                      <DialogHeader>
+                        <DialogTitle>Ordonnance Médicaments</DialogTitle>
+                      </DialogHeader>
+                      <OrdonnanceMedicaments
+                        consultation={consultation}
+                        patient={patient}
+                        medecin={medecin}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                )}
+                {consultation.examenSupplementaire && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Printer className="mr-2 h-4 w-4" />
+                        Ordonnance Examens
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+                      <DialogHeader>
+                        <DialogTitle>Ordonnance Examens Complémentaires</DialogTitle>
+                      </DialogHeader>
+                      <OrdonnanceExamens
+                        consultation={consultation}
+                        patient={patient}
+                        medecin={medecin}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>

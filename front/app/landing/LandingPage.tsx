@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FaStethoscope, 
-  FaUserMd, 
-  FaHospital, 
+import {
+  FaStethoscope,
+  FaUserMd,
+  FaHospital,
   FaCalendarCheck,
   FaXRay,
   FaHeartbeat,
@@ -15,7 +15,10 @@ import {
   FaArrowRight,
   FaPhone,
   FaMapMarkerAlt,
-  FaEnvelope
+  FaEnvelope,
+  FaCheckCircle,
+  FaAward,
+  FaUsers
 } from 'react-icons/fa';
 import './LandingPage.css';
 
@@ -39,11 +42,18 @@ interface Service {
 const LandingPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState('home');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
+
+      // Calculate scroll progress
+      const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      setScrollProgress((winScroll / height) * 100);
     };
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -87,42 +97,42 @@ const LandingPage: React.FC = () => {
     {
       id: 1,
       title: "Consultation Générale",
-      description: "Consultations médicales complètes pour tous types de pathologies",
+      description: "Consultations médicales complètes pour tous types de pathologies avec suivi personnalisé",
       icon: <FaStethoscope />,
       color: "#84cc16"
     },
     {
       id: 2,
       title: "Radiologie",
-      description: "Examens radiologiques avec équipements de dernière génération",
+      description: "Examens radiologiques avec équipements de dernière génération et interprétation rapide",
       icon: <FaXRay />,
       color: "#22c55e"
     },
     {
       id: 3,
       title: "Cardiologie",
-      description: "Diagnostic et suivi des maladies cardiovasculaires",
+      description: "Diagnostic et suivi des maladies cardiovasculaires par des spécialistes expérimentés",
       icon: <FaHeartbeat />,
       color: "#10b981"
     },
     {
       id: 4,
       title: "Analyses Médicales",
-      description: "Laboratoire d'analyses biologiques et biochimiques",
+      description: "Laboratoire d'analyses biologiques et biochimiques certifié avec résultats rapides",
       icon: <FaMicroscope />,
       color: "#14b8a6"
     },
     {
       id: 5,
       title: "Pharmacie",
-      description: "Délivrance de médicaments et conseils pharmaceutiques",
+      description: "Délivrance de médicaments et conseils pharmaceutiques par des professionnels qualifiés",
       icon: <FaPills />,
       color: "#06b6d4"
     },
     {
       id: 6,
       title: "Urgences",
-      description: "Service d'urgence disponible 24h/24 et 7j/7",
+      description: "Service d'urgence disponible 24h/24 et 7j/7 avec équipe médicale dédiée",
       icon: <FaAmbulance />,
       color: "#0ea5e9"
     }
@@ -132,23 +142,32 @@ const LandingPage: React.FC = () => {
     {
       icon: <FaClock />,
       title: "Disponibilité 24/7",
-      description: "Service d'urgence disponible à tout moment"
+      description: "Service d'urgence disponible à tout moment pour votre tranquillité d'esprit"
     },
     {
       icon: <FaShieldAlt />,
       title: "Sécurité & Confidentialité",
-      description: "Vos données médicales sont protégées"
+      description: "Vos données médicales sont protégées avec les normes de sécurité les plus strictes"
     },
     {
       icon: <FaUserMd />,
       title: "Équipe Qualifiée",
-      description: "Médecins expérimentés et certifiés"
+      description: "Médecins expérimentés et certifiés avec une expertise reconnue dans leur domaine"
     },
     {
       icon: <FaHospital />,
       title: "Équipements Modernes",
-      description: "Technologies médicales de pointe"
+      description: "Technologies médicales de pointe pour des diagnostics précis et rapides"
     }
+  ];
+
+  const benefits = [
+    "Gestion complète de votre dossier médical",
+    "Prise de rendez-vous en ligne simplifiée",
+    "Suivi médical personnalisé et continu",
+    "Historique de vos consultations accessible",
+    "Ordonnances et prescriptions numériques",
+    "Facturation transparente et détaillée"
   ];
 
   const scrollToSection = (sectionId: string) => {
@@ -165,10 +184,13 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="landing-page">
+      {/* Scroll Progress Bar */}
+      <div className="scroll-progress-bar" style={{ width: `${scrollProgress}%` }}></div>
+
       {/* Navigation */}
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="container nav-container">
-          <div className="nav-logo">
+          <div className="nav-logo" onClick={() => scrollToSection('home')}>
             <div className="logo-icon">
               <FaStethoscope />
             </div>
@@ -176,28 +198,28 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="nav-links">
-            <a 
-              href="#home" 
+            <a
+              href="#home"
               className={activeSection === 'home' ? 'active' : ''}
               onClick={(e) => { e.preventDefault(); scrollToSection('home'); }}
             >
               Accueil
             </a>
-            <a 
+            <a
               href="#services"
               className={activeSection === 'services' ? 'active' : ''}
               onClick={(e) => { e.preventDefault(); scrollToSection('services'); }}
             >
               Services
             </a>
-            <a 
+            <a
               href="#doctors"
               className={activeSection === 'doctors' ? 'active' : ''}
               onClick={(e) => { e.preventDefault(); scrollToSection('doctors'); }}
             >
               Médecins
             </a>
-            <a 
+            <a
               href="#contact"
               className={activeSection === 'contact' ? 'active' : ''}
               onClick={(e) => { e.preventDefault(); scrollToSection('contact'); }}
@@ -220,23 +242,23 @@ const LandingPage: React.FC = () => {
           <div className="hero-shape shape-2"></div>
           <div className="hero-shape shape-3"></div>
         </div>
-        
+
         <div className="container hero-container">
           <div className="hero-content">
             <div className="hero-badge">
               <FaStar className="badge-icon" />
               <span>Cabinet Médical de Confiance</span>
             </div>
-            
+
             <h1 className="hero-title">
               Votre Santé, <br />
               <span className="gradient-text">Notre Priorité</span>
             </h1>
-            
+
             <p className="hero-description">
-              Solutions simples pour piloter votre cabinet et votre activité avec clarté. 
-              Des soins de qualité, une équipe dévouée, et des technologies modernes 
-              pour votre bien-être.
+              Solutions simples pour piloter votre cabinet et votre activité avec clarté.
+              Des soins de qualité, une équipe dévouée, et des technologies modernes
+              pour votre bien-être et celui de vos patients.
             </p>
 
             <div className="hero-buttons">
@@ -266,12 +288,25 @@ const LandingPage: React.FC = () => {
                 <div className="stat-label">Médecins experts</div>
               </div>
             </div>
+
+            {/* Benefits List */}
+            <div className="hero-benefits">
+              <h3 className="benefits-title">Pourquoi nous choisir ?</h3>
+              <div className="benefits-grid">
+                {benefits.slice(0, 3).map((benefit, index) => (
+                  <div key={index} className="benefit-item">
+                    <FaCheckCircle className="benefit-icon" />
+                    <span>{benefit}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="hero-image">
             <div className="hero-image-wrapper">
-              <img 
-                src="https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=600" 
+              <img
+                src="https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=600"
                 alt="Medical professionals"
                 className="hero-img"
               />
@@ -287,6 +322,13 @@ const LandingPage: React.FC = () => {
                 <div className="card-content">
                   <div className="card-title">Suivi personnalisé</div>
                   <div className="card-subtitle">Par nos experts</div>
+                </div>
+              </div>
+              <div className="floating-card card-3">
+                <FaAward className="card-icon" />
+                <div className="card-content">
+                  <div className="card-title">Certifié</div>
+                  <div className="card-subtitle">Normes internationales</div>
                 </div>
               </div>
             </div>
@@ -322,13 +364,14 @@ const LandingPage: React.FC = () => {
             </h2>
             <p className="section-description">
               Nous offrons une gamme complète de services médicaux pour répondre à tous vos besoins de santé
+              avec excellence et professionnalisme
             </p>
           </div>
 
           <div className="services-grid">
             {services.map((service, index) => (
-              <div 
-                key={service.id} 
+              <div
+                key={service.id}
                 className="service-card"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
@@ -337,10 +380,6 @@ const LandingPage: React.FC = () => {
                 </div>
                 <h3 className="service-title">{service.title}</h3>
                 <p className="service-description">{service.description}</p>
-                <button className="service-link" style={{ color: service.color }}>
-                  En savoir plus
-                  <FaArrowRight />
-                </button>
               </div>
             ))}
           </div>
@@ -359,24 +398,19 @@ const LandingPage: React.FC = () => {
               Rencontrez Nos <span className="gradient-text">Médecins</span>
             </h2>
             <p className="section-description">
-              Une équipe de professionnels qualifiés et dévoués à votre santé
+              Une équipe de professionnels qualifiés et dévoués à votre santé avec une expertise reconnue
             </p>
           </div>
 
           <div className="doctors-grid">
             {doctors.map((doctor, index) => (
-              <div 
-                key={doctor.id} 
+              <div
+                key={doctor.id}
                 className="doctor-card"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="doctor-image-wrapper">
                   <img src={doctor.image} alt={doctor.name} className="doctor-image" />
-                  <div className="doctor-overlay">
-                    <button className="doctor-contact-btn">
-                      Prendre RDV
-                    </button>
-                  </div>
                 </div>
                 <div className="doctor-info">
                   <h3 className="doctor-name">{doctor.name}</h3>
@@ -384,8 +418,8 @@ const LandingPage: React.FC = () => {
                   <p className="doctor-experience">{doctor.experience}</p>
                   <div className="doctor-rating">
                     {[...Array(5)].map((_, i) => (
-                      <FaStar 
-                        key={i} 
+                      <FaStar
+                        key={i}
                         className={i < Math.floor(doctor.rating) ? 'star-filled' : 'star-empty'}
                       />
                     ))}
@@ -405,7 +439,7 @@ const LandingPage: React.FC = () => {
             <div className="cta-text">
               <h2 className="cta-title">Prêt à prendre soin de votre santé ?</h2>
               <p className="cta-description">
-                Rejoignez des milliers de patients satisfaits qui nous font confiance
+                Rejoignez des milliers de patients satisfaits qui nous font confiance pour leurs soins médicaux
               </p>
             </div>
             <div className="cta-buttons">
@@ -413,9 +447,9 @@ const LandingPage: React.FC = () => {
                 <FaCalendarCheck />
                 <span>Prendre rendez-vous</span>
               </button>
-              <button className="btn-outline">
-                <FaPhone />
-                <span>Appelez-nous</span>
+              <button className="btn-outline" onClick={handleLoginClick}>
+                <FaArrowRight />
+                <span>Espace Professionnel</span>
               </button>
             </div>
           </div>
@@ -434,7 +468,7 @@ const LandingPage: React.FC = () => {
               Contactez <span className="gradient-text">Nous</span>
             </h2>
             <p className="section-description">
-              Nous sommes là pour répondre à toutes vos questions
+              Nous sommes là pour répondre à toutes vos questions et vous accompagner dans vos besoins médicaux
             </p>
           </div>
 
@@ -484,16 +518,16 @@ const LandingPage: React.FC = () => {
             <div className="contact-form">
               <form>
                 <div className="form-group">
-                  <input type="text" placeholder="Votre nom" className="form-input" />
+                  <input type="text" placeholder="Votre nom" className="form-input" required />
                 </div>
                 <div className="form-group">
-                  <input type="email" placeholder="Votre email" className="form-input" />
+                  <input type="email" placeholder="Votre email" className="form-input" required />
                 </div>
                 <div className="form-group">
-                  <input type="tel" placeholder="Votre téléphone" className="form-input" />
+                  <input type="tel" placeholder="Votre téléphone" className="form-input" required />
                 </div>
                 <div className="form-group">
-                  <textarea placeholder="Votre message" rows={5} className="form-input"></textarea>
+                  <textarea placeholder="Votre message" rows={5} className="form-input" required></textarea>
                 </div>
                 <button type="submit" className="btn-submit">
                   <span>Envoyer le message</span>
@@ -516,7 +550,19 @@ const LandingPage: React.FC = () => {
               </div>
               <p className="footer-description">
                 Solutions simples pour piloter votre cabinet et votre activité avec clarté.
+                Votre santé est notre priorité absolue.
               </p>
+              <div className="footer-social">
+                <button className="social-btn" aria-label="Facebook">
+                  <FaUsers />
+                </button>
+                <button className="social-btn" aria-label="Twitter">
+                  <FaPhone />
+                </button>
+                <button className="social-btn" aria-label="LinkedIn">
+                  <FaEnvelope />
+                </button>
+              </div>
             </div>
 
             <div className="footer-section">

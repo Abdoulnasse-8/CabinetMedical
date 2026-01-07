@@ -50,14 +50,13 @@ export interface Patient {
 export interface DossierMedical {
   id: number
   patientId: number
-  groupeSanguin?: string
+  antMedicaux?: string
+  antChirug?: string
   allergies?: string
-  antecedentsMedicaux?: string
-  antecedentsChirurgicaux?: string
-  antecedentsFamiliaux?: string
-  traitementEnCours?: string
+  traitement?: string
   habitudes?: string
-  notes?: string
+  documentsMedicaux?: string
+  dateCreation?: string
 }
 
 // Consultation Types
@@ -117,6 +116,7 @@ export interface Cabinet {
   telephone: string
   email?: string
   logo?: string
+  specialite?: string
   actif: boolean
   createdAt: string
 }

@@ -1,0 +1,179 @@
+@startuml Diagramme_Composants
+
+!define FRONTEND_COLOR #E8F5E9
+!define BACKEND_COLOR #E3F2FD
+!define DATABASE_COLOR #FFF9C4
+!define EXTERNAL_COLOR #FFE0B2
+
+skinparam component {
+  BackgroundColor FRONTEND_COLOR
+  BorderColor #388E3C
+}
+
+skinparam node {
+  BackgroundColor BACKEND_COLOR
+  BorderColor #1976D2
+}
+
+skinparam database {
+  BackgroundColor DATABASE_COLOR
+  BorderColor #F57C00
+}
+
+package "Couche Présentation" {
+  component [Next.js Frontend] as Frontend FRONTEND_COLOR {
+    component [Pages] as Pages
+    component [Components] as Components
+    component [Layouts] as Layouts
+    component [Contexts] as Contexts
+    component [Hooks] as Hooks
+  }
+}
+
+package "Couche API" {
+  component [API Client] as APIClient FRONTEND_COLOR
+  component [Transformers] as Transformers FRONTEND_COLOR
+}
+
+node "Couche Métier (Backend)" {
+  package "Contrôleurs REST" {
+    component [AuthController] as AuthCtrl BACKEND_COLOR
+    component [AdminController] as AdminCtrl BACKEND_COLOR
+    component [MedecinController] as MedecinCtrl BACKEND_COLOR
+    component [PatientController] as PatientCtrl BACKEND_COLOR
+    component [RendezVousController] as RendezVousCtrl BACKEND_COLOR
+    component [FactureController] as FactureCtrl BACKEND_COLOR
+    component [MedicamentController] as MedicamentCtrl BACKEND_COLOR
+    component [UserController] as UserCtrl BACKEND_COLOR
+    component [NotificationController] as NotifCtrl BACKEND_COLOR
+  }
+
+  package "Services" {
+    component [AuthService] as AuthService BACKEND_COLOR
+    component [CabinetService] as CabinetService BACKEND_COLOR
+    component [PatientService] as PatientService BACKEND_COLOR
+    component [RendezVousService] as RendezVousService BACKEND_COLOR
+    component [ConsultationService] as ConsultationService BACKEND_COLOR
+    component [FactureService] as FactureService BACKEND_COLOR
+    component [DossierMedicalService] as DossierMedicalService BACKEND_COLOR
+    component [MedicamentService] as MedicamentService BACKEND_COLOR
+    component [DashboardService] as DashboardService BACKEND_COLOR
+    component [CustomUserDetailsService] as CustomUserDetailsService BACKEND_COLOR
+  }
+
+  package "Répositories" {
+    component [UtilisateurRepository] as UserRepo BACKEND_COLOR
+    component [PatientRepository] as PatientRepo BACKEND_COLOR
+    component [RendezVousRepository] as RendezVousRepo BACKEND_COLOR
+    component [ConsultationRepository] as ConsultationRepo BACKEND_COLOR
+    component [FactureRepository] as FactureRepo BACKEND_COLOR
+    component [CabinetRepository] as CabinetRepo BACKEND_COLOR
+    component [MedicamentRepository] as MedicamentRepo BACKEND_COLOR
+    component [DossierMedicalRepository] as DossierMedicalRepo BACKEND_COLOR
+  }
+
+  package "Sécurité" {
+    component [SecurityConfig] as Security BACKEND_COLOR
+    component [JwtUtil] as JwtUtil BACKEND_COLOR
+    component [JwtRequestFilter] as JwtFilter BACKEND_COLOR
+  }
+}
+
+database "Couche Persistance" {
+  database [MySQL Database] as MySQL DATABASE_COLOR
+}
+
+Frontend --> APIClient : Utilise
+Pages --> Components : Utilise
+Components --> Layouts : Utilise
+Components --> Contexts : Utilise
+Components --> Hooks : Utilise
+APIClient --> Transformers : Utilise
+
+APIClient --> AuthCtrl : HTTP
+APIClient --> AdminCtrl : HTTP
+APIClient --> MedecinCtrl : HTTP
+APIClient --> PatientCtrl : HTTP
+APIClient --> RendezVousCtrl : HTTP
+APIClient --> FactureCtrl : HTTP
+APIClient --> MedicamentCtrl : HTTP
+APIClient --> UserCtrl : HTTP
+APIClient --> NotifCtrl : HTTP
+
+AuthCtrl --> AuthService : Appelle
+AdminCtrl --> CabinetService : Appelle
+AdminCtrl --> MedicamentService : Appelle
+MedecinCtrl --> PatientService : Appelle
+MedecinCtrl --> ConsultationService : Appelle
+MedecinCtrl --> DossierMedicalService : Appelle
+MedecinCtrl --> DashboardService : Appelle
+PatientCtrl --> PatientService : Appelle
+RendezVousCtrl --> RendezVousService : Appelle
+FactureCtrl --> FactureService : Appelle
+MedicamentCtrl --> MedicamentService : Appelle
+NotifCtrl --> RendezVousService : Appelle
+
+AuthService --> UserRepo : Utilise
+AuthService --> JwtUtil : Utilise
+CabinetService --> CabinetRepo : Utilise
+CabinetService --> UserRepo : Utilise
+PatientService --> PatientRepo : Utilise
+PatientService --> DossierMedicalRepo : Utilise
+RendezVousService --> RendezVousRepo : Utilise
+RendezVousService --> PatientRepo : Utilise
+RendezVousService --> UserRepo : Utilise
+RendezVousService --> CabinetRepo : Utilise
+ConsultationService --> ConsultationRepo : Utilise
+ConsultationService --> DossierMedicalRepo : Utilise
+ConsultationService --> RendezVousRepo : Utilise
+ConsultationService --> PatientRepo : Utilise
+ConsultationService --> UserRepo : Utilise
+FactureService --> FactureRepo : Utilise
+FactureService --> PatientRepo : Utilise
+FactureService --> CabinetRepo : Utilise
+FactureService --> ConsultationRepo : Utilise
+DossierMedicalService --> DossierMedicalRepo : Utilise
+DossierMedicalService --> PatientRepo : Utilise
+MedicamentService --> MedicamentRepo : Utilise
+DashboardService --> PatientRepo : Utilise
+DashboardService --> ConsultationRepo : Utilise
+DashboardService --> RendezVousRepo : Utilise
+CustomUserDetailsService --> UserRepo : Utilise
+
+AuthService --> JwtUtil : Utilise
+Security --> JwtFilter : Configure
+JwtFilter --> JwtUtil : Utilise
+
+UserRepo --> MySQL : SQL
+PatientRepo --> MySQL : SQL
+RendezVousRepo --> MySQL : SQL
+ConsultationRepo --> MySQL : SQL
+FactureRepo --> MySQL : SQL
+CabinetRepo --> MySQL : SQL
+MedicamentRepo --> MySQL : SQL
+DossierMedicalRepo --> MySQL : SQL
+
+note right of Frontend
+  **Responsabilités:**
+  - Interface utilisateur
+  - Gestion d'état
+  - Routage
+  - Authentification côté client
+end note
+
+note right of AuthService
+  **Responsabilités:**
+  - Authentification
+  - Génération de tokens JWT
+  - Vérification des credentials
+end note
+
+note bottom of MySQL
+  **Responsabilités:**
+  - Stockage des données
+  - Persistance des entités
+  - Intégrité référentielle
+end note
+
+@enduml
+

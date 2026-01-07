@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import type { Medicament } from "@/types";
-import { Search, Plus, Loader2, Pill, Upload, X } from "lucide-react";
+import { Search, Plus, Loader2, Pill, Upload, X, Download } from "lucide-react";
 
 export function MedicamentsTab() {
   const { toast } = useToast();
@@ -62,6 +62,47 @@ export function MedicamentsTab() {
       fetchMedicaments();
     }
   }, [searchQuery, handleSearch, fetchMedicaments]);
+
+  const handleExport = () => {
+    try {
+      // Créer le contenu CSV
+      const headers = ["Nom", "Forme", "Dosage", "Description"]
+      const rows = medicaments.map((med) => [
+        med.nom || "",
+        med.forme || "",
+        med.dosage || "",
+        med.description || "",
+      ])
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")),
+      ].join("\n")
+
+      // Créer le blob et télécharger
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" })
+      const link = document.createElement("a")
+      const url = URL.createObjectURL(blob)
+      link.setAttribute("href", url)
+      link.setAttribute("download", `medicaments_${new Date().toISOString().split("T")[0]}.csv`)
+      link.style.visibility = "hidden"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      toast({
+        title: "Succès",
+        description: `${medicaments.length} médicament(s) exporté(s)`,
+      })
+    } catch (error) {
+      console.error("[MedicamentsTab] Export error:", error)
+      toast({
+        title: "Erreur",
+        description: "Impossible d'exporter les médicaments",
+        variant: "destructive",
+      })
+    }
+  }
 
   const handleBatchAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,10 +184,15 @@ export function MedicamentsTab() {
               Ajouter en lot
             </Button>
 
-           <Button className="rounded-full border border-[#1d3f24]/25 bg-white px-5 py-2 text-sm font-medium text-[#1d3f24] shadow-sm transition-all duration-500 ease-out hover:-translate-y-0.5 hover:shadow-md">
-                  Export
-                </Button>
-                
+           <Button
+              onClick={handleExport}
+              disabled={medicaments.length === 0}
+              className="rounded-full border border-[#1d3f24]/25 bg-white px-5 py-2 text-sm font-medium text-[#1d3f24] shadow-sm transition-all duration-500 ease-out hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
+
           </div>
         </div>
 

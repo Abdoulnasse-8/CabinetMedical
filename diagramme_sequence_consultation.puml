@@ -1,0 +1,106 @@
+@startuml Diagramme_Sequence_Creation_Consultation
+
+!define ACTOR_COLOR #E3F2FD
+!define SYSTEM_COLOR #E8F5E9
+!define DATABASE_COLOR #FFF9C4
+
+skinparam participant {
+  BackgroundColor ACTOR_COLOR
+  BorderColor #1976D2
+}
+
+skinparam database {
+  BackgroundColor DATABASE_COLOR
+  BorderColor #F57C00
+}
+
+actor "Médecin" as Medecin
+participant "Frontend" as Frontend SYSTEM_COLOR
+participant "MedecinController" as Controller SYSTEM_COLOR
+participant "ConsultationService" as Service SYSTEM_COLOR
+participant "PatientRepository" as PatientRepo
+participant "UtilisateurRepository" as UserRepo
+participant "ConsultationRepository" as ConsultationRepo
+participant "DossierMedicalRepository" as DossierRepo
+participant "RendezVousRepository" as RendezVousRepo
+database "Base de Données" as DB DATABASE_COLOR
+
+Medecin -> Frontend: Remplit le formulaire de consultation
+activate Frontend
+
+Frontend -> Controller: POST /api/medecin/consultations\n?patientId=X&medecinId=Y&rendezVousId=Z
+activate Controller
+
+Controller -> Service: createConsultation(consultation, patientId, medecinId, rendezVousId)
+activate Service
+
+Service -> PatientRepo: findById(patientId)
+activate PatientRepo
+PatientRepo -> DB: SELECT * FROM patients WHERE id = ?
+activate DB
+DB --> PatientRepo: Patient
+deactivate DB
+PatientRepo --> Service: Patient
+deactivate PatientRepo
+
+Service -> UserRepo: findById(medecinId)
+activate UserRepo
+UserRepo -> DB: SELECT * FROM utilisateurs WHERE id = ?
+activate DB
+DB --> UserRepo: Utilisateur (médecin)
+deactivate DB
+UserRepo --> Service: Médecin
+deactivate UserRepo
+
+Service -> DossierRepo: findByPatientId(patientId)
+activate DossierRepo
+DossierRepo -> DB: SELECT * FROM dossiers_medicaux WHERE patient_id = ?
+activate DB
+DB --> DossierRepo: DossierMedical
+deactivate DB
+DossierRepo --> Service: DossierMedical
+deactivate DossierRepo
+
+Service -> Service: Associer consultation au dossier médical
+
+alt Si rendezVousId fourni
+  Service -> RendezVousRepo: findById(rendezVousId)
+  activate RendezVousRepo
+  RendezVousRepo -> DB: SELECT * FROM rendez_vous WHERE id = ?
+  activate DB
+  DB --> RendezVousRepo: RendezVous
+  deactivate DB
+  RendezVousRepo --> Service: RendezVous
+  deactivate RendezVousRepo
+  Service -> Service: Associer consultation au rendez-vous
+  Service -> Service: Marquer rendez-vous comme TERMINE
+  Service -> RendezVousRepo: save(rendezVous mis à jour)
+  activate RendezVousRepo
+  RendezVousRepo -> DB: UPDATE rendez_vous SET statut='TERMINE' ...
+  deactivate RendezVousRepo
+end
+
+Service -> ConsultationRepo: save(consultation)
+activate ConsultationRepo
+
+ConsultationRepo -> DB: INSERT INTO consultations (...)
+activate DB
+DB --> ConsultationRepo: Consultation créée
+deactivate DB
+ConsultationRepo --> Service: Consultation
+deactivate ConsultationRepo
+
+Service --> Controller: Consultation créée
+deactivate Service
+
+Controller --> Frontend: 201 Created\nConsultation
+deactivate Controller
+
+Frontend -> Frontend: Afficher message de succès
+Frontend -> Frontend: Rafraîchir l'historique
+
+Frontend --> Medecin: Consultation enregistrée avec succès
+deactivate Frontend
+
+@enduml
+

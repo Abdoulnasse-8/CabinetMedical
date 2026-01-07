@@ -1,0 +1,64 @@
+@startuml Diagramme_Activite_Processus_Facturation
+
+!define DECISION_COLOR #FFE0B2
+!define ACTION_COLOR #E8F5E9
+!define START_COLOR #C8E6C9
+
+skinparam activity {
+  BackgroundColor ACTION_COLOR
+  BorderColor #388E3C
+}
+
+skinparam activityDiamond {
+  BackgroundColor DECISION_COLOR
+  BorderColor #F57C00
+}
+
+start
+
+:Consultation terminée;
+
+if (Facture nécessaire ?) then (Oui)
+  :Secrétaire sélectionne le patient;
+  :Secrétaire sélectionne la consultation (optionnel);
+  :Secrétaire crée une facture;
+
+  :Saisir le montant;
+  :Sélectionner le mode de paiement\n(ESPECES, CARTE, ASSURANCE);
+
+  if (Mode paiement = ASSURANCE ?) then (Oui)
+    :Vérifier les informations mutuelle\ndu patient (typeMutuelle);
+    :Inclure les informations mutuelle\ndans la facture;
+  else (Non)
+  endif
+
+  :Vérifier que le patient existe;
+  :Vérifier que le cabinet existe;
+  :Associer patient et cabinet à la facture;
+  :Créer dateCreation (LocalDateTime.now());
+  :Générer la facture;
+  :Enregistrer dans la base de données;
+  :Statut initial: NON_PAYEE (automatique);
+
+  :Secrétaire imprime la facture;
+  :Facture remise au patient;
+
+  partition "Validation du paiement" {
+    if (Paiement reçu ?) then (Oui)
+      :Secrétaire valide le paiement;
+      :Mettre à jour le statut: PAYEE;
+      :Enregistrer la date de paiement;
+      :Facture finalisée;
+    else (Non)
+      :Facture reste en attente;
+      :Statut: NON_PAYEE;
+    endif
+  }
+
+else (Non)
+endif
+
+stop
+
+@enduml
+

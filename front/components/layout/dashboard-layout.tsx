@@ -2,10 +2,11 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname,useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -52,6 +53,40 @@ export function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [cabinet, setCabinet] = useState<{ nom?: string; logo?: string } | null>(null);
+
+  // Charger les informations du cabinet
+  useEffect(() => {
+    const loadCabinet = async () => {
+      if (!user?.cabinetId) {
+        setCabinet(null)
+        return
+      }
+      try {
+        // Utiliser l'API appropriée selon le rôle
+        let cab: any = null
+        if (user.role === "ADMINISTRATEUR") {
+          const cabinets = await api.getCabinets()
+          cab = cabinets.find((c: any) => c.id === user.cabinetId)
+        } else {
+          // Pour médecins et secrétaires, utiliser l'endpoint users/me/cabinet
+          cab = await api.getMyCabinet()
+        }
+        if (cab) {
+          setCabinet({
+            nom: cab.nom || "",
+            logo: cab.logo || null
+          })
+        } else {
+          setCabinet(null)
+        }
+      } catch (error) {
+        console.error("Error loading cabinet:", error)
+        setCabinet(null)
+      }
+    }
+    loadCabinet()
+  }, [user?.cabinetId, user?.role])
 
   const NavLinks = ({ onClick }: { onClick?: () => void }) => (
     <div className="space-y-1">
@@ -93,14 +128,22 @@ export function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
         <div className="flex h-full flex-col">
           {/* Brand */}
           <div className="flex h-20 items-center gap-3 border-b border-slate-200 px-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/10 border border-black/10">
-              <Heart className="h-5 w-5 text-slate-900" />
-            </div>
+            {cabinet?.logo ? (
+              <img
+                src={cabinet.logo}
+                alt="Logo du cabinet"
+                className="h-10 w-10 rounded-xl object-contain border border-slate-200 bg-white p-1"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/10 border border-black/10">
+                <Heart className="h-5 w-5 text-slate-900" />
+              </div>
+            )}
             <div className="leading-tight">
               <span className="text-base font-semibold tracking-tight text-slate-900">
-                Noble Finance
+                {cabinet?.nom || "Cabinet Médical"}
               </span>
-              <p className="text-xs text-slate-500">Cabinet médical</p>
+              <p className="text-xs text-slate-500">Gestion médicale</p>
             </div>
           </div>
 
@@ -154,14 +197,22 @@ export function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
 
             <SheetContent side="left" className="w-72 p-0 border-r-0">
               <div className="flex h-20 items-center gap-3 border-b border-slate-200 px-6 bg-white">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/10 border border-black/10">
-                  <Heart className="h-5 w-5 text-slate-900" />
-                </div>
+                {cabinet?.logo ? (
+                  <img
+                    src={cabinet.logo}
+                    alt="Logo du cabinet"
+                    className="h-10 w-10 rounded-xl object-contain border border-slate-200 bg-white p-1"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/10 border border-black/10">
+                    <Heart className="h-5 w-5 text-slate-900" />
+                  </div>
+                )}
                 <div className="leading-tight">
                   <span className="text-base font-semibold tracking-tight text-slate-900">
-                    Noble Finance
+                    {cabinet?.nom || "Cabinet Médical"}
                   </span>
-                  <p className="text-xs text-slate-500">Cabinet médical</p>
+                  <p className="text-xs text-slate-500">Gestion médicale</p>
                 </div>
               </div>
 
@@ -250,7 +301,7 @@ export function DashboardLayout({ children, navItems }: DashboardLayoutProps) {
         <main className="flex-1 p-4 lg:p-8">{children}</main>
       </div>
     </div>
-  );
+  )
 }
 
 export const navIcons = {

@@ -1,0 +1,91 @@
+@startuml Diagramme_Sequence_Authentification
+
+!define ACTOR_COLOR #E3F2FD
+!define SYSTEM_COLOR #E8F5E9
+!define DATABASE_COLOR #FFF9C4
+
+skinparam participant {
+  BackgroundColor ACTOR_COLOR
+  BorderColor #1976D2
+}
+
+skinparam database {
+  BackgroundColor DATABASE_COLOR
+  BorderColor #F57C00
+}
+
+actor "Utilisateur" as User
+participant "Frontend" as Frontend SYSTEM_COLOR
+participant "AuthController" as AuthController SYSTEM_COLOR
+participant "AuthService" as AuthService SYSTEM_COLOR
+participant "UtilisateurRepository" as UserRepo
+database "Base de Données" as DB DATABASE_COLOR
+participant "JwtUtil" as JwtUtil SYSTEM_COLOR
+
+User -> Frontend: Saisit login et mot de passe
+activate Frontend
+
+Frontend -> AuthController: POST /api/auth/login\n{login, pwd}
+activate AuthController
+
+AuthController -> AuthService: authenticate(authRequest)
+activate AuthService
+
+AuthService -> UserRepo: findByLogin(login)
+activate UserRepo
+UserRepo -> DB: SELECT * FROM utilisateurs WHERE login = ?
+activate DB
+DB --> UserRepo: Utilisateur
+deactivate DB
+UserRepo --> AuthService: Optional<Utilisateur>
+deactivate UserRepo
+
+alt Utilisateur non trouvé
+  AuthService --> AuthController: RuntimeException("Login ou mot de passe incorrect")
+  AuthController --> Frontend: 401 Unauthorized
+  Frontend --> User: Message d'erreur
+else Utilisateur trouvé
+  AuthService -> AuthService: passwordEncoder.matches(pwd, utilisateur.pwd)
+
+  alt Mot de passe incorrect
+    AuthService --> AuthController: RuntimeException("Login ou mot de passe incorrect")
+    AuthController --> Frontend: 401 Unauthorized
+    Frontend --> User: Message d'erreur
+  else Mot de passe correct
+    AuthService -> AuthService: Vérifier si cabinet actif\n(si MEDECIN ou SECRETAIRE)
+
+    alt Cabinet désactivé (MEDECIN/SECRETAIRE uniquement)
+      AuthService --> AuthController: RuntimeException("Ce cabinet a été désactivé")
+      AuthController --> Frontend: 403 Forbidden
+      Frontend --> User: Message d'erreur "Cabinet désactivé"
+    else Cabinet actif ou ADMINISTRATEUR
+      AuthService -> JwtUtil: generateToken(login, role, userId, cabinetId)
+      activate JwtUtil
+      JwtUtil --> AuthService: Token JWT
+      deactivate JwtUtil
+
+      AuthService -> AuthService: Créer AuthResponse
+      AuthService --> AuthController: AuthResponse(token, login, role, ...)
+      deactivate AuthService
+
+      AuthController --> Frontend: 200 OK\nAuthResponse
+      deactivate AuthController
+
+      Frontend -> Frontend: Stocker token dans localStorage
+      Frontend -> Frontend: Rediriger selon le rôle
+
+      alt Rôle ADMINISTRATEUR
+        Frontend --> User: Redirection /admin/dashboard
+      else Rôle MÉDECIN
+        Frontend --> User: Redirection /medecin/dashboard
+      else Rôle SECRÉTAIRE
+        Frontend --> User: Redirection /secretaire/dashboard
+      end
+    end
+  end
+end
+
+deactivate Frontend
+
+@enduml
+

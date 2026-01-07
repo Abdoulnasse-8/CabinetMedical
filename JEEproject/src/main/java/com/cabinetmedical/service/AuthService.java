@@ -3,6 +3,7 @@ package com.cabinetmedical.service;
 import com.cabinetmedical.dto.AuthRequest;
 import com.cabinetmedical.dto.AuthResponse;
 import com.cabinetmedical.entity.Utilisateur;
+import com.cabinetmedical.enums.Role;
 import com.cabinetmedical.repository.UtilisateurRepository;
 import com.cabinetmedical.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,15 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.getPwd(), utilisateur.getPwd())) {
             throw new RuntimeException("Login ou mot de passe incorrect");
+        }
+
+        // Vérifier si le cabinet est actif seulement pour les médecins et secrétaires
+        // Les administrateurs peuvent toujours se connecter même si le cabinet est désactivé
+        if (utilisateur.getCabinet() != null && !utilisateur.getCabinet().getActif()) {
+            if (utilisateur.getRole() == Role.MEDECIN || utilisateur.getRole() == Role.SECRETAIRE) {
+                throw new RuntimeException("Ce cabinet a été désactivé. Veuillez contacter l'administrateur.");
+            }
+            // Les ADMINISTRATEUR peuvent toujours se connecter
         }
 
         String token = jwtUtil.generateToken(

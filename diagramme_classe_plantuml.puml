@@ -1,0 +1,700 @@
+@startuml Diagramme_Classes_Cabinet_Medical
+
+!define ENTITY_COLOR #E3F2FD
+!define DTO_COLOR #E8F5E9
+!define REPO_COLOR #FFF9C4
+!define SERVICE_COLOR #FFE0B2
+!define CONTROLLER_COLOR #FCE4EC
+!define SECURITY_COLOR #FFCDD2
+!define CONFIG_COLOR #F5F5F5
+!define ENUM_COLOR #E1BEE7
+
+skinparam class {
+  BackgroundColor ENTITY_COLOR
+  ArrowColor #1976D2
+  BorderColor #1976D2
+}
+
+' ============================================
+' ENUMS
+' ============================================
+enum Role ENUM_COLOR {
+  MEDECIN
+  SECRETAIRE
+  ADMINISTRATEUR
+}
+
+enum StatutRendezVous ENUM_COLOR {
+  CONFIRME
+  ANNULE
+  EN_ATTENTE
+  TERMINE
+}
+
+enum StatutFacture ENUM_COLOR {
+  PAYEE
+  NON_PAYEE
+  PARTIELLEMENT_PAYEE
+}
+
+enum ModePaiement ENUM_COLOR {
+  ESPECES
+  CARTE
+  ASSURANCE
+}
+
+enum TypeConsultation ENUM_COLOR {
+  CONSULTATION
+  CONTROLE
+}
+
+' ============================================
+' ENTITIES
+' ============================================
+class Cabinet ENTITY_COLOR {
+  - Long id {PK}
+  - String logo {LONGTEXT}
+  - String nom {NOT NULL}
+  - String specialite
+  - String adresse
+  - String tel
+  - Boolean actif {NOT NULL, default=true}
+  --
+  + Table: cabinets
+}
+
+class Utilisateur ENTITY_COLOR {
+  - Long id {PK}
+  - String login {UNIQUE, NOT NULL}
+  - String pwd {NOT NULL, WRITE_ONLY}
+  - String nom {NOT NULL}
+  - String prenom {NOT NULL}
+  - String numTel
+  - String signature {TEXT}
+  - Role role {NOT NULL}
+  --
+  + Cabinet cabinet {ManyToOne}
+  + List<Consultation> consultations {OneToMany}
+  + List<RendezVous> rendezVous {OneToMany}
+  + Table: utilisateurs
+}
+
+class Patient ENTITY_COLOR {
+  - Long id {PK}
+  - String cin {UNIQUE, NOT NULL}
+  - String nom {NOT NULL}
+  - String prenom {NOT NULL}
+  - LocalDate dateNaissance
+  - String sexe
+  - String numTel
+  - String typemutuelle
+  --
+  + Cabinet cabinet {ManyToOne, LAZY}
+  + DossierMedical dossierMedical {OneToOne, LAZY}
+  + List<RendezVous> rendezVous {OneToMany, LAZY}
+  + List<Facture> factures {OneToMany, LAZY}
+  + Table: patients
+}
+
+class RendezVous ENTITY_COLOR {
+  - Long idRendezVous {PK}
+  - LocalDate dateRdv {NOT NULL}
+  - LocalTime heureRdv {NOT NULL}
+  - String motif
+  - StatutRendezVous statut {NOT NULL, default=EN_ATTENTE}
+  - String notes {TEXT}
+  --
+  + Patient patient {ManyToOne, NOT NULL, LAZY}
+  + Utilisateur medecin {ManyToOne, NOT NULL, LAZY}
+  + Cabinet cabinet {ManyToOne, LAZY}
+  + Consultation consultation {OneToOne, LAZY}
+  + Table: rendez_vous
+}
+
+class Consultation ENTITY_COLOR {
+  - Long idConsultation {PK}
+  - TypeConsultation type {NOT NULL}
+  - LocalDate dateConsultation {NOT NULL}
+  - String examenClinique {TEXT}
+  - String examenSupplementaire {TEXT}
+  - String diagnostic {TEXT}
+  - String traitement {TEXT}
+  - String observations {TEXT}
+  --
+  + Utilisateur medecin {ManyToOne, NOT NULL, LAZY}
+  + Patient patient {ManyToOne, NOT NULL, LAZY}
+  + DossierMedical dossierMedical {ManyToOne, LAZY}
+  + RendezVous rendezVous {OneToOne, LAZY}
+  + Table: consultations
+}
+
+class Facture ENTITY_COLOR {
+  - Long idFacture {PK}
+  - BigDecimal montant {NOT NULL}
+  - ModePaiement modePaiement {NOT NULL}
+  - StatutFacture statut {NOT NULL, default=NON_PAYEE}
+  - LocalDateTime dateCreation {NOT NULL}
+  --
+  + Patient patient {ManyToOne, NOT NULL, LAZY}
+  + Cabinet cabinet {ManyToOne, LAZY}
+  + Consultation consultation {OneToOne, LAZY}
+  + Table: factures
+}
+
+class DossierMedical ENTITY_COLOR {
+  - Long idDossier {PK}
+  - String antMedicaux {TEXT}
+  - String antChirug {TEXT}
+  - String allergies {TEXT}
+  - String traitement {TEXT}
+  - String habitudes {TEXT}
+  - String documentsMedicaux {TEXT}
+  - LocalDateTime dateCreation {NOT NULL}
+  --
+  + Patient patient {OneToOne, UNIQUE, NOT NULL, LAZY}
+  + List<Consultation> historiqueConsultations {OneToMany, LAZY}
+  + Table: dossiers_medicaux
+}
+
+class Medicament ENTITY_COLOR {
+  - Long id {PK}
+  - String nom {UNIQUE, NOT NULL}
+  - String dosage
+  - String forme
+  - String description {TEXT}
+  --
+  + Table: medicaments
+}
+
+' ============================================
+' DTOs
+' ============================================
+class AuthRequest DTO_COLOR {
+  + String login
+  + String pwd
+}
+
+class AuthResponse DTO_COLOR {
+  + String token
+  + String login
+  + String role
+  + Long userId
+  + Long cabinetId
+  + String nom
+  + String prenom
+}
+
+class UserDto DTO_COLOR {
+  + Long id
+  + String login
+  + String nom
+  + String prenom
+  + String numTel
+  + String signature
+  + Role role
+  + Long cabinetId
+}
+
+class UserMeDto DTO_COLOR {
+  + Long id
+  + String login
+  + String nom
+  + String prenom
+  + String role
+  + Long cabinetId
+}
+
+class UpdateProfileRequest DTO_COLOR {
+  + String nom
+  + String prenom
+}
+
+' ============================================
+' REPOSITORIES
+' ============================================
+interface JpaRepository<T, ID> REPO_COLOR {
+  + save(T entity) : T
+  + findById(ID id) : Optional<T>
+  + findAll() : List<T>
+  + deleteById(ID id) : void
+  + delete(T entity) : void
+}
+
+interface UtilisateurRepository REPO_COLOR {
+  + findByLogin(String login) : Optional<Utilisateur>
+  + findByCabinetId(Long cabinetId) : List<Utilisateur>
+  + findByRole(Role role) : List<Utilisateur>
+  + findByCabinetIdAndRole(Long cabinetId, Role role) : List<Utilisateur>
+}
+
+interface PatientRepository REPO_COLOR {
+  + findByCin(String cin) : Optional<Patient>
+  + findByCabinetId(Long cabinetId) : List<Patient>
+  + searchPatients(Long cabinetId, String search) : List<Patient>
+}
+
+interface CabinetRepository REPO_COLOR {
+  + findByActifTrue() : List<Cabinet>
+}
+
+interface RendezVousRepository REPO_COLOR {
+  + findByPatientId(Long patientId) : List<RendezVous>
+  + findByMedecinId(Long medecinId) : List<RendezVous>
+  + findByCabinetId(Long cabinetId) : List<RendezVous>
+  + findByDateRdvAndMedecinId(LocalDate date, Long medecinId) : List<RendezVous>
+  + findByStatut(StatutRendezVous statut) : List<RendezVous>
+  + findTodayByCabinet(Long cabinetId, LocalDate today) : List<RendezVous>
+  + findConflictingRendezVous(LocalDate date, LocalTime heure, Long medecinId) : List<RendezVous>
+  + findTodayRendezVousByMedecin(LocalDate date, Long medecinId) : List<RendezVous>
+  + findByCabinetIdWithPatient(Long cabinetId) : List<RendezVous>
+  + findByCabinetIdWithDetails(Long cabinetId) : List<RendezVous>
+  + findTodayRendezVousByMedecinWithDetails(LocalDate date, Long medecinId) : List<RendezVous>
+}
+
+interface ConsultationRepository REPO_COLOR {
+  + findByPatientId(Long patientId) : List<Consultation>
+  + findByMedecinId(Long medecinId) : List<Consultation>
+}
+
+interface FactureRepository REPO_COLOR {
+  + findByPatientId(Long patientId) : List<Facture>
+  + findByCabinetId(Long cabinetId) : List<Facture>
+  + findByStatut(StatutFacture statut) : List<Facture>
+}
+
+interface DossierMedicalRepository REPO_COLOR {
+  + findByPatientId(Long patientId) : Optional<DossierMedical>
+}
+
+interface MedicamentRepository REPO_COLOR {
+  + findByNomContainingIgnoreCase(String search) : List<Medicament>
+}
+
+' ============================================
+' SERVICES
+' ============================================
+class AuthService SERVICE_COLOR {
+  - UtilisateurRepository utilisateurRepository
+  - JwtUtil jwtUtil
+  - PasswordEncoder passwordEncoder
+  --
+  + authenticate(AuthRequest request) : AuthResponse
+}
+
+class PatientService SERVICE_COLOR {
+  - PatientRepository patientRepository
+  - DossierMedicalRepository dossierMedicalRepository
+  --
+  + getAllPatients(Long cabinetId) : List<Patient>
+  + getPatientById(Long id) : Patient
+  + getPatientByCin(String cin) : Patient
+  + searchPatients(Long cabinetId, String search) : List<Patient>
+  + createPatient(Patient patient, Long cabinetId) : Patient
+  + updatePatient(Long id, Patient patient) : Patient
+  + deletePatient(Long id) : void
+}
+
+class RendezVousService SERVICE_COLOR {
+  - RendezVousRepository rendezVousRepository
+  - PatientRepository patientRepository
+  - UtilisateurRepository utilisateurRepository
+  - CabinetRepository cabinetRepository
+  --
+  + getAllRendezVous(Long cabinetId) : List<RendezVous>
+  + getRendezVousById(Long id) : RendezVous
+  + getRendezVousByPatient(Long patientId) : List<RendezVous>
+  + getTodayRendezVousByMedecin(Long medecinId) : List<RendezVous>
+  + getTodayRendezVousByCabinet(Long cabinetId) : List<RendezVous>
+  + createRendezVous(RendezVous rdv, Long patientId, Long medecinId, Long cabinetId) : RendezVous
+  + updateRendezVous(Long id, RendezVous rdv) : RendezVous
+  + updateStatutRendezVous(Long id, StatutRendezVous statut) : RendezVous
+  + deleteRendezVous(Long id) : void
+}
+
+class ConsultationService SERVICE_COLOR {
+  - ConsultationRepository consultationRepository
+  - DossierMedicalRepository dossierMedicalRepository
+  - RendezVousRepository rendezVousRepository
+  - PatientRepository patientRepository
+  - UtilisateurRepository utilisateurRepository
+  --
+  + getConsultationsByPatient(Long patientId) : List<Consultation>
+  + getConsultationById(Long id) : Consultation
+  + createConsultation(Consultation consultation, Long patientId, Long medecinId, Long rendezVousId) : Consultation
+  + updateConsultation(Long id, Consultation consultation) : Consultation
+  + deleteConsultation(Long id) : void
+}
+
+class FactureService SERVICE_COLOR {
+  - FactureRepository factureRepository
+  - PatientRepository patientRepository
+  - CabinetRepository cabinetRepository
+  - ConsultationRepository consultationRepository
+  --
+  + getAllFactures(Long cabinetId) : List<Facture>
+  + getFactureById(Long id) : Facture
+  + getFacturesByPatient(Long patientId) : List<Facture>
+  + createFacture(Facture facture, Long patientId, Long cabinetId, Long consultationId) : Facture
+  + updateFacture(Long id, Facture facture) : Facture
+  + updateStatutFacture(Long id, StatutFacture statut) : Facture
+  + deleteFacture(Long id) : void
+}
+
+class DossierMedicalService SERVICE_COLOR {
+  - DossierMedicalRepository dossierMedicalRepository
+  - PatientRepository patientRepository
+  --
+  + getDossierByPatientId(Long patientId) : DossierMedical
+  + updateDossierMedical(Long patientId, DossierMedical dossier) : DossierMedical
+}
+
+class CabinetService SERVICE_COLOR {
+  - CabinetRepository cabinetRepository
+  - UtilisateurRepository utilisateurRepository
+  - PasswordEncoder passwordEncoder
+  --
+  + getAllCabinets() : List<Cabinet>
+  + getActiveCabinets() : List<Cabinet>
+  + getCabinetById(Long id) : Cabinet
+  + createCabinet(Cabinet cabinet) : Cabinet
+  + updateCabinet(Long id, Cabinet cabinet) : Cabinet
+  + toggleCabinetStatus(Long id) : Cabinet
+  + deleteCabinet(Long id) : void
+  + createUtilisateurForCabinet(Long cabinetId, Utilisateur utilisateur) : Utilisateur
+  + getUtilisateursByCabinet(Long cabinetId) : List<Utilisateur>
+  + getUtilisateursByCabinetAsDto(Long cabinetId) : List<UserDto>
+  + updateUtilisateur(Long cabinetId, Long userId, Utilisateur utilisateur) : Utilisateur
+  + deleteUtilisateur(Long userId) : void
+}
+
+class MedicamentService SERVICE_COLOR {
+  - MedicamentRepository medicamentRepository
+  --
+  + getAllMedicaments() : List<Medicament>
+  + getMedicamentById(Long id) : Medicament
+  + searchMedicaments(String search) : List<Medicament>
+  + createMedicament(Medicament medicament) : Medicament
+  + createMedicaments(List<Medicament> medicaments) : List<Medicament>
+  + updateMedicament(Long id, Medicament medicament) : Medicament
+  + deleteMedicament(Long id) : void
+}
+
+class DashboardService SERVICE_COLOR {
+  - PatientRepository patientRepository
+  - ConsultationRepository consultationRepository
+  - RendezVousRepository rendezVousRepository
+  --
+  + getDashboardData(Long cabinetId, Long medecinId) : Map<String, Object>
+}
+
+class CustomUserDetailsService SERVICE_COLOR {
+  - UtilisateurRepository utilisateurRepository
+  --
+  + loadUserByUsername(String username) : UserDetails
+}
+
+' ============================================
+' CONTROLLERS
+' ============================================
+class AuthController CONTROLLER_COLOR {
+  - AuthService authService
+  --
+  + POST /api/auth/login(AuthRequest) : ResponseEntity<AuthResponse>
+}
+
+class PatientController CONTROLLER_COLOR {
+  - PatientService patientService
+  --
+  + GET /api/secretaire/patients?cabinetId= : ResponseEntity<List<Patient>>
+  + GET /api/secretaire/patients/{id} : ResponseEntity<Patient>
+  + GET /api/secretaire/patients/cin/{cin} : ResponseEntity<Patient>
+  + GET /api/secretaire/patients/search?cabinetId=&search= : ResponseEntity<List<Patient>>
+  + POST /api/secretaire/patients?cabinetId= : ResponseEntity<Patient>
+  + PUT /api/secretaire/patients/{id} : ResponseEntity<Patient>
+  + DELETE /api/secretaire/patients/{id} : ResponseEntity<Void>
+}
+
+class RendezVousController CONTROLLER_COLOR {
+  - RendezVousService rendezVousService
+  --
+  + GET /api/secretaire/rendez-vous?cabinetId= : ResponseEntity<List<RendezVous>>
+  + GET /api/secretaire/rendez-vous/{id} : ResponseEntity<RendezVous>
+  + GET /api/secretaire/rendez-vous/patient/{patientId} : ResponseEntity<List<RendezVous>>
+  + POST /api/secretaire/rendez-vous?patientId=&medecinId=&cabinetId= : ResponseEntity<RendezVous>
+  + PUT /api/secretaire/rendez-vous/{id} : ResponseEntity<RendezVous>
+  + PUT /api/secretaire/rendez-vous/{id}/statut?statut= : ResponseEntity<RendezVous>
+  + DELETE /api/secretaire/rendez-vous/{id} : ResponseEntity<Void>
+}
+
+class MedecinController CONTROLLER_COLOR {
+  - PatientService patientService
+  - ConsultationService consultationService
+  - DossierMedicalService dossierMedicalService
+  - RendezVousService rendezVousService
+  - DashboardService dashboardService
+  - UtilisateurRepository utilisateurRepository
+  --
+  + GET /api/medecin/patients/search?cabinetId=&search= : ResponseEntity<List<Patient>>
+  + GET /api/medecin/patients/cin/{cin} : ResponseEntity<Patient>
+  + GET /api/medecin/patients/{id} : ResponseEntity<Patient>
+  + GET /api/medecin/patients/{patientId}/dossier : ResponseEntity<DossierMedical>
+  + PUT /api/medecin/patients/{patientId}/dossier : ResponseEntity<DossierMedical>
+  + GET /api/medecin/patients/{patientId}/consultations : ResponseEntity<List<Consultation>>
+  + GET /api/medecin/consultations/{id} : ResponseEntity<Consultation>
+  + POST /api/medecin/consultations?patientId=&medecinId=&rendezVousId= : ResponseEntity<Consultation>
+  + PUT /api/medecin/consultations/{id} : ResponseEntity<Consultation>
+  + GET /api/medecin/rendez-vous/aujourdhui : ResponseEntity<List<RendezVous>>
+  + GET /api/medecin/dashboard?cabinetId=&medecinId= : ResponseEntity<Map<String, Object>>
+}
+
+class FactureController CONTROLLER_COLOR {
+  - FactureService factureService
+  --
+  + GET /api/secretaire/factures?cabinetId= : ResponseEntity<List<Facture>>
+  + GET /api/secretaire/factures/{id} : ResponseEntity<Facture>
+  + GET /api/secretaire/factures/patient/{patientId} : ResponseEntity<List<Facture>>
+  + POST /api/secretaire/factures?patientId=&cabinetId=&consultationId= : ResponseEntity<Facture>
+  + PUT /api/secretaire/factures/{id} : ResponseEntity<Facture>
+  + PUT /api/secretaire/factures/{id}/statut?statut= : ResponseEntity<Facture>
+  + DELETE /api/secretaire/factures/{id} : ResponseEntity<Void>
+}
+
+class MedicamentController CONTROLLER_COLOR {
+  - MedicamentService medicamentService
+  --
+  + GET /api/medicaments/search?search= : ResponseEntity<List<Medicament>>
+  + GET /api/medicaments : ResponseEntity<List<Medicament>>
+}
+
+class AdminController CONTROLLER_COLOR {
+  - CabinetService cabinetService
+  - MedicamentService medicamentService
+  --
+  + GET /api/admin/cabinets : ResponseEntity<List<Cabinet>>
+  + GET /api/admin/cabinets/actifs : ResponseEntity<List<Cabinet>>
+  + GET /api/admin/cabinets/{id} : ResponseEntity<Cabinet>
+  + POST /api/admin/cabinets : ResponseEntity<Cabinet>
+  + PUT /api/admin/cabinets/{id} : ResponseEntity<Cabinet>
+  + PUT /api/admin/cabinets/{id}/toggle : ResponseEntity<Cabinet>
+  + DELETE /api/admin/cabinets/{id} : ResponseEntity<Void>
+  + POST /api/admin/cabinets/{cabinetId}/utilisateurs : ResponseEntity<Utilisateur>
+  + GET /api/admin/cabinets/{cabinetId}/utilisateurs : ResponseEntity<List<UserDto>>
+  + PUT /api/admin/cabinets/{cabinetId}/utilisateurs/{userId} : ResponseEntity<Utilisateur>
+  + DELETE /api/admin/cabinets/{cabinetId}/utilisateurs/{userId} : ResponseEntity<Void>
+  + GET /api/admin/medicaments : ResponseEntity<List<Medicament>>
+  + GET /api/admin/medicaments/search?search= : ResponseEntity<List<Medicament>>
+  + GET /api/admin/medicaments/{id} : ResponseEntity<Medicament>
+  + POST /api/admin/medicaments : ResponseEntity<Medicament>
+  + POST /api/admin/medicaments/batch : ResponseEntity<List<Medicament>>
+  + PUT /api/admin/medicaments/{id} : ResponseEntity<Medicament>
+  + DELETE /api/admin/medicaments/{id} : ResponseEntity<Void>
+}
+
+class UserController CONTROLLER_COLOR {
+  - UtilisateurRepository utilisateurRepository
+  - CabinetRepository cabinetRepository
+  --
+  + GET /api/users/me : ResponseEntity<UserMeDto>
+  + PUT /api/users/me : ResponseEntity<UserMeDto>
+  + GET /api/users/me/cabinet : ResponseEntity<Cabinet>
+}
+
+class NotificationController CONTROLLER_COLOR {
+  - RendezVousService rendezVousService
+  - UtilisateurRepository utilisateurRepository
+  --
+  + GET /api/notifications/rendez-vous/aujourdhui : ResponseEntity<Map<String, Object>>
+  + GET /api/notifications/patient-en-cours : ResponseEntity<Map<String, Object>>
+  + GET /api/notifications/summary : ResponseEntity<Map<String, Object>>
+}
+
+' ============================================
+' SECURITY
+' ============================================
+class JwtUtil SECURITY_COLOR {
+  - String secret
+  - Long expiration
+  --
+  + generateToken(String login, String role, Long userId, Long cabinetId) : String
+  + extractUsername(String token) : String
+  + extractRole(String token) : String
+  + extractUserId(String token) : Long
+  + extractCabinetId(String token) : Long
+  + validateToken(String token, String username) : Boolean
+  + extractExpiration(String token) : Date
+}
+
+class JwtRequestFilter SECURITY_COLOR {
+  - JwtUtil jwtUtil
+  - CustomUserDetailsService userDetailsService
+  --
+  + doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain) : void
+}
+
+' ============================================
+' CONFIGURATION
+' ============================================
+class SecurityConfig CONFIG_COLOR {
+  - JwtRequestFilter jwtRequestFilter
+  --
+  + SecurityFilterChain filterChain(HttpSecurity) : SecurityFilterChain
+  + CorsConfigurationSource corsConfigurationSource() : CorsConfigurationSource
+  + PasswordEncoder passwordEncoder() : BCryptPasswordEncoder
+  + AuthenticationManager authenticationManager(AuthenticationConfiguration) : AuthenticationManager
+}
+
+class JacksonConfig CONFIG_COLOR {
+  + ObjectMapper objectMapper() : ObjectMapper
+}
+
+class DataInitializer CONFIG_COLOR {
+  - CabinetRepository cabinetRepository
+  - UtilisateurRepository utilisateurRepository
+  - PasswordEncoder passwordEncoder
+  - MedicamentRepository medicamentRepository
+  --
+  + run(ApplicationArguments) : void
+  + initializeData() : void
+}
+
+class CabinetMedicalApplication CONFIG_COLOR {
+  + main(String[] args) : void
+}
+
+' ============================================
+' RELATIONS ENTITIES
+' ============================================
+Utilisateur "1" --> "0..*" Consultation : medecin
+Utilisateur "1" --> "0..*" RendezVous : medecin
+Utilisateur "*" --> "1" Cabinet : cabinet
+
+Patient "1" --> "1" DossierMedical : dossierMedical
+Patient "1" --> "0..*" RendezVous : patient
+Patient "1" --> "0..*" Facture : factures
+Patient "*" --> "1" Cabinet : cabinet
+
+RendezVous "1" --> "0..1" Consultation : consultation
+RendezVous "*" --> "1" Patient : patient
+RendezVous "*" --> "1" Utilisateur : medecin
+RendezVous "*" --> "1" Cabinet : cabinet
+
+Consultation "*" --> "1" Utilisateur : medecin
+Consultation "*" --> "1" Patient : patient
+Consultation "*" --> "1" DossierMedical : dossierMedical
+Consultation "1" --> "0..1" RendezVous : rendezVous
+
+Facture "*" --> "1" Patient : patient
+Facture "*" --> "1" Cabinet : cabinet
+Facture "1" --> "0..1" Consultation : consultation
+
+DossierMedical "1" --> "0..*" Consultation : historiqueConsultations
+
+' Relations avec énumérations
+Utilisateur ..> Role : uses
+RendezVous ..> StatutRendezVous : uses
+Facture ..> ModePaiement : uses
+Facture ..> StatutFacture : uses
+Consultation ..> TypeConsultation : uses
+
+' ============================================
+' RELATIONS REPOSITORIES - JPA
+' ============================================
+UtilisateurRepository --|> JpaRepository
+PatientRepository --|> JpaRepository
+CabinetRepository --|> JpaRepository
+RendezVousRepository --|> JpaRepository
+ConsultationRepository --|> JpaRepository
+FactureRepository --|> JpaRepository
+DossierMedicalRepository --|> JpaRepository
+MedicamentRepository --|> JpaRepository
+
+' ============================================
+' RELATIONS SERVICES - REPOSITORIES
+' ============================================
+AuthService ..> UtilisateurRepository : uses
+AuthService ..> JwtUtil : uses
+
+PatientService ..> PatientRepository : uses
+PatientService ..> DossierMedicalRepository : uses
+
+RendezVousService ..> RendezVousRepository : uses
+RendezVousService ..> PatientRepository : uses
+RendezVousService ..> UtilisateurRepository : uses
+RendezVousService ..> CabinetRepository : uses
+
+ConsultationService ..> ConsultationRepository : uses
+ConsultationService ..> DossierMedicalRepository : uses
+ConsultationService ..> RendezVousRepository : uses
+ConsultationService ..> PatientRepository : uses
+ConsultationService ..> UtilisateurRepository : uses
+
+FactureService ..> FactureRepository : uses
+FactureService ..> PatientRepository : uses
+FactureService ..> CabinetRepository : uses
+FactureService ..> ConsultationRepository : uses
+
+DossierMedicalService ..> DossierMedicalRepository : uses
+DossierMedicalService ..> PatientRepository : uses
+
+CabinetService ..> CabinetRepository : uses
+CabinetService ..> UtilisateurRepository : uses
+CabinetService ..> PasswordEncoder : uses
+
+MedicamentService ..> MedicamentRepository : uses
+
+DashboardService ..> PatientRepository : uses
+DashboardService ..> ConsultationRepository : uses
+DashboardService ..> RendezVousRepository : uses
+
+CustomUserDetailsService ..> UtilisateurRepository : uses
+
+' ============================================
+' RELATIONS CONTROLLERS - SERVICES
+' ============================================
+AuthController ..> AuthService : uses
+
+PatientController ..> PatientService : uses
+
+RendezVousController ..> RendezVousService : uses
+
+MedecinController ..> PatientService : uses
+MedecinController ..> ConsultationService : uses
+MedecinController ..> DossierMedicalService : uses
+MedecinController ..> RendezVousService : uses
+MedecinController ..> DashboardService : uses
+MedecinController ..> UtilisateurRepository : uses
+
+FactureController ..> FactureService : uses
+
+MedicamentController ..> MedicamentService : uses
+
+AdminController ..> CabinetService : uses
+AdminController ..> MedicamentService : uses
+
+UserController ..> UtilisateurRepository : uses
+UserController ..> CabinetRepository : uses
+
+NotificationController ..> RendezVousService : uses
+NotificationController ..> UtilisateurRepository : uses
+
+' ============================================
+' RELATIONS SECURITY
+' ============================================
+JwtRequestFilter ..> JwtUtil : uses
+JwtRequestFilter ..> CustomUserDetailsService : uses
+SecurityConfig ..> JwtRequestFilter : configures
+SecurityConfig ..> PasswordEncoder : configures
+
+' ============================================
+' RELATIONS DTOs
+' ============================================
+AuthController ..> AuthRequest : receives
+AuthController ..> AuthResponse : returns
+AuthService ..> AuthRequest : uses
+AuthService ..> AuthResponse : creates
+
+UserController ..> UserMeDto : returns
+UserController ..> UpdateProfileRequest : receives
+AdminController ..> UserDto : returns
+
+@enduml

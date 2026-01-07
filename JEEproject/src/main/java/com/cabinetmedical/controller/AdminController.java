@@ -73,8 +73,24 @@ public class AdminController {
     }
 
     @GetMapping("/cabinets/{cabinetId}/utilisateurs")
-    public ResponseEntity<List<Utilisateur>> getUtilisateursByCabinet(@PathVariable Long cabinetId) {
-        return ResponseEntity.ok(cabinetService.getUtilisateursByCabinet(cabinetId));
+    public ResponseEntity<List<com.cabinetmedical.dto.UserDto>> getUtilisateursByCabinet(@PathVariable Long cabinetId) {
+        return ResponseEntity.ok(cabinetService.getUtilisateursByCabinetAsDto(cabinetId));
+    }
+
+    @PutMapping("/cabinets/{cabinetId}/utilisateurs/{userId}")
+    public ResponseEntity<Utilisateur> updateUtilisateur(
+            @PathVariable Long cabinetId,
+            @PathVariable Long userId,
+            @RequestBody Utilisateur utilisateurDetails) {
+        return ResponseEntity.ok(cabinetService.updateUtilisateur(cabinetId, userId, utilisateurDetails));
+    }
+
+    @DeleteMapping("/cabinets/{cabinetId}/utilisateurs/{userId}")
+    public ResponseEntity<Void> deleteUtilisateur(
+            @PathVariable Long cabinetId,
+            @PathVariable Long userId) {
+        cabinetService.deleteUtilisateur(userId);
+        return ResponseEntity.noContent().build();
     }
 
     // Gestion des médicaments

@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { api } from "@/lib/api"
 import type { Facture, FactureStatut } from "@/types"
 import { FactureForm } from "@/components/secretaire/facture-form"
+import { FacturePrint } from "@/components/secretaire/facture-print"
 import { Plus, MoreHorizontal, Loader2, CheckCircle, XCircle, Printer } from "lucide-react"
 
 export function FacturesTab() {
@@ -21,7 +22,7 @@ export function FacturesTab() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [printingFacture, setPrintingFacture] = useState<Facture | null>(null)
-  const printRef = useRef<HTMLDivElement>(null)
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false)
 
   const fetchFactures = useCallback(async () => {
     if (!user?.cabinetId) return
@@ -79,37 +80,7 @@ export function FacturesTab() {
 
   const handlePrint = (facture: Facture) => {
     setPrintingFacture(facture)
-    setTimeout(() => {
-      const printContent = printRef.current
-      if (!printContent) return
-
-      const printWindow = window.open("", "_blank")
-      if (!printWindow) return
-
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Facture #${facture.id}</title>
-            <style>
-              body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-              .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; }
-              .title { font-size: 24px; font-weight: bold; color: #2563eb; }
-              .info { margin-bottom: 20px; }
-              .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-              .total { font-size: 20px; font-weight: bold; text-align: right; margin-top: 30px; padding-top: 20px; border-top: 2px solid #2563eb; }
-            </style>
-          </head>
-          <body>
-            ${printContent.innerHTML}
-          </body>
-        </html>
-      `)
-
-      printWindow.document.close()
-      printWindow.print()
-      setPrintingFacture(null)
-    }, 100)
+    setIsPrintDialogOpen(true)
   }
 
   const getStatutBadge = (statut: FactureStatut) => {
@@ -235,43 +206,22 @@ export function FacturesTab() {
         </CardContent>
       </Card>
 
-      {/* Hidden print template */}
-      {printingFacture && (
-        <div className="hidden">
-          <div ref={printRef}>
-            <div className="header">
-              <div className="title">FACTURE #{printingFacture.id}</div>
-            </div>
-            <div className="info">
-              <div className="info-row">
-                <span>Patient:</span>
-                <span>
-                  {printingFacture.patient?.prenom} {printingFacture.patient?.nom}
-                </span>
-              </div>
-              <div className="info-row">
-                <span>Date:</span>
-                <span>{new Date(printingFacture.dateFacture).toLocaleDateString("fr-FR")}</span>
-              </div>
-              <div className="info-row">
-                <span>Mode de paiement:</span>
-                <span>{getModePaiementLabel(printingFacture.modePaiement)}</span>
-              </div>
-              <div className="info-row">
-                <span>Statut:</span>
-                <span>
-                  {printingFacture.statut === "PAYEE"
-                    ? "Payée"
-                    : printingFacture.statut === "EN_ATTENTE"
-                      ? "En attente"
-                      : "Annulée"}
-                </span>
-              </div>
-            </div>
-            <div className="total">Total: {printingFacture.montant.toFixed(2)} DH</div>
-          </div>
-        </div>
-      )}
+      {/* Dialog d'impression */}
+      <Dialog open={isPrintDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setIsPrintDialogOpen(false)
+          setPrintingFacture(null)
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto">
+          <DialogHeader>
+            <DialogTitle>Facture #{printingFacture?.id}</DialogTitle>
+          </DialogHeader>
+          {printingFacture && user?.cabinetId && (
+            <FacturePrint facture={printingFacture} cabinetId={user.cabinetId} />
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

@@ -1,6 +1,7 @@
 
 package com.cabinetmedical.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,7 +17,7 @@ public class Cabinet {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @Column(name = "logo", columnDefinition = "TEXT")
+    @Column(name = "logo", columnDefinition = "LONGTEXT")
     private String logo;
 
     @Column(name = "nom", nullable = false)

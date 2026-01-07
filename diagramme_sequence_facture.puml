@@ -1,0 +1,114 @@
+@startuml Diagramme_Sequence_Creation_Facture
+
+!define ACTOR_COLOR #E3F2FD
+!define SYSTEM_COLOR #E8F5E9
+!define DATABASE_COLOR #FFF9C4
+
+skinparam participant {
+  BackgroundColor ACTOR_COLOR
+  BorderColor #1976D2
+}
+
+skinparam database {
+  BackgroundColor DATABASE_COLOR
+  BorderColor #F57C00
+}
+
+actor "Secrétaire" as Secretaire
+participant "Frontend" as Frontend SYSTEM_COLOR
+participant "FactureController" as Controller SYSTEM_COLOR
+participant "FactureService" as Service SYSTEM_COLOR
+participant "FactureRepository" as FactureRepo
+participant "PatientRepository" as PatientRepo
+participant "CabinetRepository" as CabinetRepo
+participant "ConsultationRepository" as ConsultationRepo
+database "Base de Données" as DB DATABASE_COLOR
+
+Secretaire -> Frontend: Sélectionne consultation et remplit formulaire
+activate Frontend
+
+Frontend -> Controller: POST /api/secretaire/factures\n?patientId=X&cabinetId=Y&consultationId=Z
+activate Controller
+
+Controller -> Service: createFacture(facture, patientId, cabinetId, consultationId)
+activate Service
+
+Service -> PatientRepo: findById(patientId)
+activate PatientRepo
+PatientRepo -> DB: SELECT * FROM patients WHERE id = ?
+activate DB
+DB --> PatientRepo: Patient
+deactivate DB
+PatientRepo --> Service: Patient
+deactivate PatientRepo
+
+alt Patient non trouvé
+  Service --> Controller: RuntimeException("Patient non trouvé")
+  Controller --> Frontend: 404 Not Found
+  Frontend --> Secretaire: Message d'erreur
+else Patient trouvé
+  Service -> CabinetRepo: findById(cabinetId)
+  activate CabinetRepo
+  CabinetRepo -> DB: SELECT * FROM cabinets WHERE id = ?
+  activate DB
+  DB --> CabinetRepo: Cabinet
+  deactivate DB
+  CabinetRepo --> Service: Cabinet
+  deactivate CabinetRepo
+
+  alt Cabinet non trouvé
+    Service --> Controller: RuntimeException("Cabinet non trouvé")
+    Controller --> Frontend: 404 Not Found
+    Frontend --> Secretaire: Message d'erreur
+  else Cabinet trouvé
+    Service -> Service: facture.setPatient(patient)
+    Service -> Service: facture.setCabinet(cabinet)
+    Service -> Service: facture.setDateCreation(LocalDateTime.now())
+    Service -> Service: facture.setStatut(StatutFacture.NON_PAYEE)
+
+    alt Consultation fournie
+      Service -> ConsultationRepo: findById(consultationId)
+      activate ConsultationRepo
+      ConsultationRepo -> DB: SELECT * FROM consultations WHERE id = ?
+      activate DB
+      DB --> ConsultationRepo: Consultation
+      deactivate DB
+      ConsultationRepo --> Service: Consultation
+      deactivate ConsultationRepo
+
+      alt Consultation non trouvée
+        Service --> Controller: RuntimeException("Consultation non trouvée")
+        Controller --> Frontend: 404 Not Found
+        Frontend --> Secretaire: Message d'erreur
+      else Consultation trouvée
+        Service -> Service: facture.setConsultation(consultation)
+      end
+    else Pas de consultation
+    end
+
+    Service -> FactureRepo: save(facture)
+    activate FactureRepo
+    FactureRepo -> DB: INSERT INTO factures (montant, mode_paiement, statut, date_creation, patient_id, cabinet_id, consultation_id) VALUES (...)
+    activate DB
+    DB --> FactureRepo: Facture créée
+    deactivate DB
+    FactureRepo --> Service: Facture
+    deactivate FactureRepo
+
+    Service --> Controller: Facture créée
+    deactivate Service
+
+    Controller --> Frontend: 201 Created\nFacture
+    deactivate Controller
+
+    Frontend -> Frontend: Afficher message de succès
+    Frontend -> Frontend: Rafraîchir la liste des factures
+
+    Frontend --> Secretaire: Facture créée avec succès
+  end
+end
+
+deactivate Frontend
+
+@enduml
+

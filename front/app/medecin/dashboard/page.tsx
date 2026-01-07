@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useEffect, useState, useCallback, useMemo, useRef } from "react"
@@ -64,7 +63,7 @@ function DoctorDashboardContent() {
       const [statsData, appointmentsData, patientData] = await Promise.all([
         api.getMedecinDashboard(user.cabinetId, user.id),
         api.getRendezVousAujourdhui(),
-        api.getPatientEnCours(user.id),
+        api.getPatientEnCours(user.id).catch(() => null), // Ne pas bloquer si erreur
       ])
 
       setStats(statsData)

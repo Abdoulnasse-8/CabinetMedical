@@ -1,0 +1,93 @@
+@startuml Diagramme_Deploiement
+
+!define SERVER_COLOR #E3F2FD
+!define DATABASE_COLOR #FFF9C4
+!define CLIENT_COLOR #E8F5E9
+!define NETWORK_COLOR #FCE4EC
+
+skinparam node {
+  BackgroundColor SERVER_COLOR
+  BorderColor #1976D2
+}
+
+skinparam database {
+  BackgroundColor DATABASE_COLOR
+  BorderColor #F57C00
+}
+
+skinparam component {
+  BackgroundColor CLIENT_COLOR
+  BorderColor #388E3C
+}
+
+rectangle "Client Navigateur Web" {
+  component [Next.js Frontend] as Frontend CLIENT_COLOR
+  component [React Components] as React CLIENT_COLOR
+  component [API Client] as APIClient CLIENT_COLOR
+}
+
+cloud "Internet / Réseau Local" as Network NETWORK_COLOR
+
+node "Serveur Backend" {
+  component [Spring Boot Application] as SpringBoot SERVER_COLOR
+  component [REST Controllers] as Controllers SERVER_COLOR
+  component [Services] as Services SERVER_COLOR
+  component [Repositories] as Repositories SERVER_COLOR
+  component [Security Layer] as Security SERVER_COLOR
+  component [JWT Authentication] as JWT SERVER_COLOR
+}
+
+database "Base de Données MySQL" as MySQL DATABASE_COLOR {
+  folder "Tables" {
+    [Cabinets]
+    [Utilisateurs]
+    [Patients]
+    [Rendez_vous]
+    [Consultations]
+    [Dossiers_medicaux]
+    [Factures]
+    [Medicaments]
+  }
+}
+
+Frontend --> React : Utilise
+React --> APIClient : Utilise
+APIClient --> Network : HTTP/HTTPS Requests
+Network --> SpringBoot : HTTP/HTTPS Requests
+
+SpringBoot --> Controllers : Routes
+Controllers --> Services : Appelle
+Services --> Repositories : Utilise
+Security --> JWT : Utilise
+Controllers --> Security : Protégé par
+
+Services --> MySQL : Accès
+Repositories --> MySQL : Requêtes SQL
+
+note right of Frontend
+  **Technologies:**
+  - Next.js 16
+  - React 18
+  - TypeScript
+  - Tailwind CSS
+  - shadcn/ui
+end note
+
+note right of SpringBoot
+  **Technologies:**
+  - Spring Boot 3.x
+  - Spring Security
+  - JWT
+  - JPA/Hibernate
+  - Maven
+end note
+
+note right of MySQL
+  **Configuration:**
+  - MySQL 8.0+
+  - Port: 3306
+  - Charset: UTF-8
+end note
+
+@enduml
+

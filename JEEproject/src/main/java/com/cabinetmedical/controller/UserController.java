@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cabinetmedical.dto.UpdateProfileRequest;
 import com.cabinetmedical.dto.UserMeDto;
+import com.cabinetmedical.entity.Cabinet;
 import com.cabinetmedical.entity.Utilisateur;
 import com.cabinetmedical.repository.UtilisateurRepository;
 
@@ -63,4 +64,17 @@ public ResponseEntity<UserMeDto> updateMe(Authentication auth, @RequestBody Upda
 
     return ResponseEntity.ok(dto);
 }
+
+    @GetMapping("/me/cabinet")
+    public ResponseEntity<Cabinet> getMyCabinet(Authentication auth) {
+        String login = auth.getName();
+        Utilisateur u = utilisateurRepository.findByLogin(login)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        if (u.getCabinet() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(u.getCabinet());
+    }
 }

@@ -1,0 +1,85 @@
+@startuml Diagramme_Activite_Processus_Consultation
+
+!define DECISION_COLOR #FFE0B2
+!define ACTION_COLOR #E8F5E9
+!define START_COLOR #C8E6C9
+
+skinparam activity {
+  BackgroundColor ACTION_COLOR
+  BorderColor #388E3C
+}
+
+skinparam activityDiamond {
+  BackgroundColor DECISION_COLOR
+  BorderColor #F57C00
+}
+
+start
+
+:Secrétaire recherche le patient\n(par CIN ou nom);
+:Secrétaire envoie le patient en cours;
+:Notification "patient en cours"\nenvoyée au médecin via API;
+
+:Médecin clique sur la notification\n"Patient en cours";
+:Médecin accède au profil patient\nvia GET /api/medecin/patients/{id};
+
+:Médecin consulte le dossier médical\nvia GET /api/medecin/patients/{patientId}/dossier;
+
+if (Dossier médical complet ?) then (Oui)
+  :Médecin peut créer la consultation;
+else (Non)
+  :Médecin met à jour le dossier médical\n(PUT /api/medecin/patients/{patientId}/dossier);
+  :Sauvegarder les modifications\n(antMedicaux, antChirug, allergies, traitement, habitudes, documentsMedicaux);
+endif
+
+:Médecin remplit le formulaire de consultation;
+:Médecin sélectionne le type\n(CONSULTATION ou CONTROLE);
+:Médecin saisit dateConsultation;
+:Médecin saisit examenClinique\n(Température, tension, observations physiques);
+:Médecin saisit examenSupplementaire\n(Analyses, radiographies, IRM, scanner, échographie);
+:Médecin saisit diagnostic;
+:Médecin saisit traitement\n(médicaments prescrits);
+
+if (Prescription médicaments ?) then (Oui)
+  :Saisir les médicaments prescrits;
+  :Choisir l'ordonnance médicaments;
+else (Non)
+endif
+
+if (Prescription examens ?) then (Oui)
+  :Saisir les examens prescrits;
+  :Choisir l'ordonnance examens;
+else (Non)
+endif
+
+:Médecin ajoute observations (optionnel);
+:Médecin valide la consultation;
+
+:POST /api/medecin/consultations\navec patientId, medecinId, rendezVousId;
+:Vérifier que le patient existe;
+:Vérifier que le médecin existe;
+:Récupérer le dossier médical du patient;
+:Associer consultation au dossier médical;
+:Enregistrer la consultation dans la base de données;
+:Mettre à jour l'historique des consultations\ndu dossier médical;
+
+if (Rendez-vous associé ?) then (Oui)
+  :Récupérer le rendez-vous\nvia rendezVousId;
+  :Marquer le rendez-vous comme TERMINE\n(StatutRendezVous.TERMINE);
+  :Sauvegarder le rendez-vous mis à jour;
+else (Non)
+endif
+
+if (Ordonnance créée ?) then (Oui)
+  :Médecin imprime l'ordonnance;
+  :Signature automatique ajoutée;
+else (Non)
+endif
+
+:Consultation terminée;
+:Redirection vers l'historique;
+
+stop
+
+@enduml
+

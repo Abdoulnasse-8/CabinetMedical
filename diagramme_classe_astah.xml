@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xmi:XMI xmi:version="2.1" xmlns:uml="http://www.omg.org/spec/UML/20110701" xmlns:xmi="http://www.omg.org/spec/XMI/20110701">
+  <xmi:Documentation exporter="Auto" exporterVersion="1.0"/>
+  <uml:Model xmi:id="CabinetMedicalModel" name="CabinetMedical">
+
+    <!-- ENUMS -->
+    <uml:Enumeration xmi:id="RoleEnum" name="Role">
+      <ownedLiteral xmi:id="Role_MEDECIN" name="MEDECIN"/>
+      <ownedLiteral xmi:id="Role_SECRETAIRE" name="SECRETAIRE"/>
+      <ownedLiteral xmi:id="Role_ADMINISTRATEUR" name="ADMINISTRATEUR"/>
+    </uml:Enumeration>
+
+    <uml:Enumeration xmi:id="StatutRendezVousEnum" name="StatutRendezVous">
+      <ownedLiteral xmi:id="SRV_CONFIRME" name="CONFIRME"/>
+      <ownedLiteral xmi:id="SRV_ANNULE" name="ANNULE"/>
+      <ownedLiteral xmi:id="SRV_EN_ATTENTE" name="EN_ATTENTE"/>
+      <ownedLiteral xmi:id="SRV_TERMINE" name="TERMINE"/>
+    </uml:Enumeration>
+
+    <uml:Enumeration xmi:id="StatutFactureEnum" name="StatutFacture">
+      <ownedLiteral xmi:id="SF_PAYEE" name="PAYEE"/>
+      <ownedLiteral xmi:id="SF_NON_PAYEE" name="NON_PAYEE"/>
+      <ownedLiteral xmi:id="SF_PARTIELLEMENT_PAYEE" name="PARTIELLEMENT_PAYEE"/>
+    </uml:Enumeration>
+
+    <uml:Enumeration xmi:id="ModePaiementEnum" name="ModePaiement">
+      <ownedLiteral xmi:id="MP_ESPECES" name="ESPECES"/>
+      <ownedLiteral xmi:id="MP_CARTE" name="CARTE"/>
+      <ownedLiteral xmi:id="MP_ASSURANCE" name="ASSURANCE"/>
+    </uml:Enumeration>
+
+    <uml:Enumeration xmi:id="TypeConsultationEnum" name="TypeConsultation">
+      <ownedLiteral xmi:id="TC_CONSULTATION" name="CONSULTATION"/>
+      <ownedLiteral xmi:id="TC_CONTROLE" name="CONTROLE"/>
+    </uml:Enumeration>
+
+    <!-- ENTITIES -->
+    <uml:Class xmi:id="CabinetClass" name="Cabinet">
+      <ownedAttribute xmi:id="Cabinet_id" name="id" type="Long"/>
+      <ownedAttribute xmi:id="Cabinet_logo" name="logo" type="String"/>
+      <ownedAttribute xmi:id="Cabinet_nom" name="nom" type="String"/>
+      <ownedAttribute xmi:id="Cabinet_specialite" name="specialite" type="String"/>
+      <ownedAttribute xmi:id="Cabinet_adresse" name="adresse" type="String"/>
+      <ownedAttribute xmi:id="Cabinet_tel" name="tel" type="String"/>
+      <ownedAttribute xmi:id="Cabinet_actif" name="actif" type="Boolean"/>
+    </uml:Class>
+
+    <uml:Class xmi:id="UtilisateurClass" name="Utilisateur">
+      <ownedAttribute xmi:id="Utilisateur_id" name="id" type="Long"/>
+      <ownedAttribute xmi:id="Utilisateur_login" name="login" type="String"/>
+      <ownedAttribute xmi:id="Utilisateur_pwd" name="pwd" type="String"/>
+      <ownedAttribute xmi:id="Utilisateur_nom" name="nom" type="String"/>
+      <ownedAttribute xmi:id="Utilisateur_prenom" name="prenom" type="String"/>
+      <ownedAttribute xmi:id="Utilisateur_numTel" name="numTel" type="String"/>
+      <ownedAttribute xmi:id="Utilisateur_signature" name="signature" type="String"/>
+      <ownedAttribute xmi:id="Utilisateur_role" name="role" type="RoleEnum"/>
+    </uml:Class>
+
+    <uml:Class xmi:id="PatientClass" name="Patient">
+      <ownedAttribute xmi:id="Patient_id" name="id" type="Long"/>
+      <ownedAttribute xmi:id="Patient_cin" name="cin" type="String"/>
+      <ownedAttribute xmi:id="Patient_nom" name="nom" type="String"/>
+      <ownedAttribute xmi:id="Patient_prenom" name="prenom" type="String"/>
+      <ownedAttribute xmi:id="Patient_dateNaissance" name="dateNaissance" type="LocalDate"/>
+      <ownedAttribute xmi:id="Patient_sexe" name="sexe" type="String"/>
+      <ownedAttribute xmi:id="Patient_numTel" name="numTel" type="String"/>
+      <ownedAttribute xmi:id="Patient_typemutuelle" name="typemutuelle" type="String"/>
+    </uml:Class>
+
+    <uml:Class xmi:id="RendezVousClass" name="RendezVous">
+      <ownedAttribute xmi:id="RendezVous_idRendezVous" name="idRendezVous" type="Long"/>
+      <ownedAttribute xmi:id="RendezVous_dateRdv" name="dateRdv" type="LocalDate"/>
+      <ownedAttribute xmi:id="RendezVous_heureRdv" name="heureRdv" type="LocalTime"/>
+      <ownedAttribute xmi:id="RendezVous_motif" name="motif" type="String"/>
+      <ownedAttribute xmi:id="RendezVous_statut" name="statut" type="StatutRendezVousEnum"/>
+      <ownedAttribute xmi:id="RendezVous_notes" name="notes" type="String"/>
+    </uml:Class>
+
+    <uml:Class xmi:id="ConsultationClass" name="Consultation">
+      <ownedAttribute xmi:id="Consultation_idConsultation" name="idConsultation" type="Long"/>
+      <ownedAttribute xmi:id="Consultation_type" name="type" type="TypeConsultationEnum"/>
+      <ownedAttribute xmi:id="Consultation_dateConsultation" name="dateConsultation" type="LocalDate"/>
+      <ownedAttribute xmi:id="Consultation_examenClinique" name="examenClinique" type="String"/>
+      <ownedAttribute xmi:id="Consultation_examenSupplementaire" name="examenSupplementaire" type="String"/>
+      <ownedAttribute xmi:id="Consultation_diagnostic" name="diagnostic" type="String"/>
+      <ownedAttribute xmi:id="Consultation_traitement" name="traitement" type="String"/>
+      <ownedAttribute xmi:id="Consultation_observations" name="observations" type="String"/>
+    </uml:Class>
+
+    <uml:Class xmi:id="FactureClass" name="Facture">
+      <ownedAttribute xmi:id="Facture_idFacture" name="idFacture" type="Long"/>
+      <ownedAttribute xmi:id="Facture_montant" name="montant" type="BigDecimal"/>
+      <ownedAttribute xmi:id="Facture_modePaiement" name="modePaiement" type="ModePaiementEnum"/>
+      <ownedAttribute xmi:id="Facture_statut" name="statut" type="StatutFactureEnum"/>
+      <ownedAttribute xmi:id="Facture_dateCreation" name="dateCreation" type="LocalDateTime"/>
+    </uml:Class>
+
+    <uml:Class xmi:id="DossierMedicalClass" name="DossierMedical">
+      <ownedAttribute xmi:id="DossierMedical_idDossier" name="idDossier" type="Long"/>
+      <ownedAttribute xmi:id="DossierMedical_antMedicaux" name="antMedicaux" type="String"/>
+      <ownedAttribute xmi:id="DossierMedical_antChirug" name="antChirug" type="String"/>
+      <ownedAttribute xmi:id="DossierMedical_allergies" name="allergies" type="String"/>
+      <ownedAttribute xmi:id="DossierMedical_traitement" name="traitement" type="String"/>
+      <ownedAttribute xmi:id="DossierMedical_habitudes" name="habitudes" type="String"/>
+      <ownedAttribute xmi:id="DossierMedical_documentsMedicaux" name="documentsMedicaux" type="String"/>
+      <ownedAttribute xmi:id="DossierMedical_dateCreation" name="dateCreation" type="LocalDateTime"/>
+    </uml:Class>
+
+    <uml:Class xmi:id="MedicamentClass" name="Medicament">
+      <ownedAttribute xmi:id="Medicament_id" name="id" type="Long"/>
+      <ownedAttribute xmi:id="Medicament_nom" name="nom" type="String"/>
+      <ownedAttribute xmi:id="Medicament_dosage" name="dosage" type="String"/>
+      <ownedAttribute xmi:id="Medicament_forme" name="forme" type="String"/>
+      <ownedAttribute xmi:id="Medicament_description" name="description" type="String"/>
+    </uml:Class>
+
+    <!-- RELATIONS -->
+    <uml:Association xmi:id="Utilisateur_Cabinet">
+      <memberEnd xmi:idref="Utilisateur_cabinet"/>
+      <memberEnd xmi:idref="Cabinet_utilisateurs"/>
+      <ownedEnd xmi:id="Utilisateur_cabinet" type="CabinetClass" aggregation="none" association="Utilisateur_Cabinet">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="Utilisateur_cabinet_lower" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="Utilisateur_cabinet_upper" value="1"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="Cabinet_utilisateurs" type="UtilisateurClass" aggregation="none" association="Utilisateur_Cabinet">
+        <lowerValue xmi:type="uml:LiteralInteger" xmi:id="Cabinet_utilisateurs_lower" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="Cabinet_utilisateurs_upper" value="*"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="Patient_Cabinet">
+      <memberEnd xmi:idref="Patient_cabinet"/>
+      <memberEnd xmi:idref="Cabinet_patients"/>
+      <ownedEnd xmi:id="Patient_cabinet" type="CabinetClass" aggregation="none" association="Patient_Cabinet">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="Cabinet_patients" type="PatientClass" aggregation="none" association="Patient_Cabinet">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="Patient_DossierMedical">
+      <memberEnd xmi:idref="Patient_dossierMedical"/>
+      <memberEnd xmi:idref="DossierMedical_patient"/>
+      <ownedEnd xmi:id="Patient_dossierMedical" type="DossierMedicalClass" aggregation="composite" association="Patient_DossierMedical">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="DossierMedical_patient" type="PatientClass" aggregation="none" association="Patient_DossierMedical">
+        <lowerValue xmi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="Utilisateur_Consultation">
+      <memberEnd xmi:idref="Utilisateur_consultations"/>
+      <memberEnd xmi:idref="Consultation_medecin"/>
+      <ownedEnd xmi:id="Utilisateur_consultations" type="ConsultationClass" aggregation="none" association="Utilisateur_Consultation">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="Consultation_medecin" type="UtilisateurClass" aggregation="none" association="Utilisateur_Consultation">
+        <lowerValue xmi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="Utilisateur_RendezVous">
+      <memberEnd xmi:idref="Utilisateur_rendezVous"/>
+      <memberEnd xmi:idref="RendezVous_medecin"/>
+      <ownedEnd xmi:id="Utilisateur_rendezVous" type="RendezVousClass" aggregation="none" association="Utilisateur_RendezVous">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="RendezVous_medecin" type="UtilisateurClass" aggregation="none" association="Utilisateur_RendezVous">
+        <lowerValue xmi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="Patient_RendezVous">
+      <memberEnd xmi:idref="Patient_rendezVous"/>
+      <memberEnd xmi:idref="RendezVous_patient"/>
+      <ownedEnd xmi:id="Patient_rendezVous" type="RendezVousClass" aggregation="none" association="Patient_RendezVous">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="RendezVous_patient" type="PatientClass" aggregation="none" association="Patient_RendezVous">
+        <lowerValue xmi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="RendezVous_Consultation">
+      <memberEnd xmi:idref="RendezVous_consultation"/>
+      <memberEnd xmi:idref="Consultation_rendezVous"/>
+      <ownedEnd xmi:id="RendezVous_consultation" type="ConsultationClass" aggregation="none" association="RendezVous_Consultation">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="Consultation_rendezVous" type="RendezVousClass" aggregation="none" association="RendezVous_Consultation">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="Patient_Consultation">
+      <memberEnd xmi:idref="Patient_consultations"/>
+      <memberEnd xmi:idref="Consultation_patient"/>
+      <ownedEnd xmi:id="Patient_consultations" type="ConsultationClass" aggregation="none" association="Patient_Consultation">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="Consultation_patient" type="PatientClass" aggregation="none" association="Patient_Consultation">
+        <lowerValue xmi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="DossierMedical_Consultation">
+      <memberEnd xmi:idref="DossierMedical_historiqueConsultations"/>
+      <memberEnd xmi:idref="Consultation_dossierMedical"/>
+      <ownedEnd xmi:id="DossierMedical_historiqueConsultations" type="ConsultationClass" aggregation="none" association="DossierMedical_Consultation">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="Consultation_dossierMedical" type="DossierMedicalClass" aggregation="none" association="DossierMedical_Consultation">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="Patient_Facture">
+      <memberEnd xmi:idref="Patient_factures"/>
+      <memberEnd xmi:idref="Facture_patient"/>
+      <ownedEnd xmi:id="Patient_factures" type="FactureClass" aggregation="none" association="Patient_Facture">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="Facture_patient" type="PatientClass" aggregation="none" association="Patient_Facture">
+        <lowerValue xmi:type="uml:LiteralInteger" value="1"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="Cabinet_Facture">
+      <memberEnd xmi:idref="Cabinet_factures"/>
+      <memberEnd xmi:idref="Facture_cabinet"/>
+      <ownedEnd xmi:id="Cabinet_factures" type="FactureClass" aggregation="none" association="Cabinet_Facture">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="Facture_cabinet" type="CabinetClass" aggregation="none" association="Cabinet_Facture">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="Consultation_Facture">
+      <memberEnd xmi:idref="Consultation_facture"/>
+      <memberEnd xmi:idref="Facture_consultation"/>
+      <ownedEnd xmi:id="Consultation_facture" type="FactureClass" aggregation="none" association="Consultation_Facture">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="Facture_consultation" type="ConsultationClass" aggregation="none" association="Consultation_Facture">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <uml:Association xmi:id="Cabinet_RendezVous">
+      <memberEnd xmi:idref="Cabinet_rendezVous"/>
+      <memberEnd xmi:idref="RendezVous_cabinet"/>
+      <ownedEnd xmi:id="Cabinet_rendezVous" type="RendezVousClass" aggregation="none" association="Cabinet_RendezVous">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="*"/>
+      </ownedEnd>
+      <ownedEnd xmi:id="RendezVous_cabinet" type="CabinetClass" aggregation="none" association="Cabinet_RendezVous">
+        <lowerValue xmi:type="uml:LiteralInteger" value="0"/>
+        <upperValue xmi:type="uml:LiteralUnlimitedNatural" value="1"/>
+      </ownedEnd>
+    </uml:Association>
+
+    <!-- DEPENDENCIES (Enums) -->
+    <uml:Dependency xmi:id="Utilisateur_Role_Dep" client="UtilisateurClass" supplier="RoleEnum"/>
+    <uml:Dependency xmi:id="RendezVous_Statut_Dep" client="RendezVousClass" supplier="StatutRendezVousEnum"/>
+    <uml:Dependency xmi:id="Facture_ModePaiement_Dep" client="FactureClass" supplier="ModePaiementEnum"/>
+    <uml:Dependency xmi:id="Facture_Statut_Dep" client="FactureClass" supplier="StatutFactureEnum"/>
+    <uml:Dependency xmi:id="Consultation_Type_Dep" client="ConsultationClass" supplier="TypeConsultationEnum"/>
+
+  </uml:Model>
+</xmi:XMI>
+
+

@@ -1,5 +1,6 @@
 package com.cabinetmedical.service;
 
+import com.cabinetmedical.dto.UserDto;
 import com.cabinetmedical.entity.Cabinet;
 import com.cabinetmedical.entity.Utilisateur;
 import com.cabinetmedical.enums.Role;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CabinetService {
@@ -66,12 +68,76 @@ public class CabinetService {
     public Utilisateur createUtilisateurForCabinet(Long cabinetId, Utilisateur utilisateur) {
         Cabinet cabinet = getCabinetById(cabinetId);
         utilisateur.setCabinet(cabinet);
-        utilisateur.setPwd(passwordEncoder.encode(utilisateur.getPwd()));
+
+        // Validation : le mot de passe ne peut pas être null ou vide
+        String rawPassword = utilisateur.getPwd();
+        if (rawPassword == null || rawPassword.trim().isEmpty()) {
+            throw new IllegalArgumentException("Le mot de passe est obligatoire");
+        }
+
+        utilisateur.setPwd(passwordEncoder.encode(rawPassword));
         return utilisateurRepository.save(utilisateur);
     }
 
     public List<Utilisateur> getUtilisateursByCabinet(Long cabinetId) {
         return utilisateurRepository.findByCabinetId(cabinetId);
+    }
+
+    public List<UserDto> getUtilisateursByCabinetAsDto(Long cabinetId) {
+        return utilisateurRepository.findByCabinetId(cabinetId).stream()
+                .map(u -> {
+                    UserDto dto = new UserDto();
+                    dto.setId(u.getId());
+                    dto.setLogin(u.getLogin());
+                    dto.setNom(u.getNom());
+                    dto.setPrenom(u.getPrenom());
+                    dto.setNumTel(u.getNumTel());
+                    dto.setSignature(u.getSignature());
+                    dto.setRole(u.getRole());
+                    dto.setCabinetId(u.getCabinet() != null ? u.getCabinet().getId() : null);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public Utilisateur updateUtilisateur(Long cabinetId, Long userId, Utilisateur utilisateurDetails) {
+        Cabinet cabinet = getCabinetById(cabinetId);
+        Utilisateur utilisateur = utilisateurRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        // Vérifier que l'utilisateur appartient au cabinet
+        if (!utilisateur.getCabinet().getId().equals(cabinetId)) {
+            throw new RuntimeException("L'utilisateur n'appartient pas à ce cabinet");
+        }
+
+        utilisateur.setNom(utilisateurDetails.getNom());
+        utilisateur.setPrenom(utilisateurDetails.getPrenom());
+        utilisateur.setNumTel(utilisateurDetails.getNumTel());
+        utilisateur.setRole(utilisateurDetails.getRole());
+        utilisateur.setSignature(utilisateurDetails.getSignature());
+
+        // Mettre à jour le mot de passe seulement s'il est fourni
+        if (utilisateurDetails.getPwd() != null && !utilisateurDetails.getPwd().isEmpty()) {
+            utilisateur.setPwd(passwordEncoder.encode(utilisateurDetails.getPwd()));
+        }
+
+        return utilisateurRepository.save(utilisateur);
+    }
+
+    public void deleteUtilisateur(Long userId) {
+        Utilisateur utilisateur = utilisateurRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        // Ne pas permettre la suppression si c'est le dernier admin du cabinet
+        if (utilisateur.getRole() == Role.ADMINISTRATEUR) {
+            List<Utilisateur> admins = utilisateurRepository.findByCabinetIdAndRole(
+                utilisateur.getCabinet().getId(), Role.ADMINISTRATEUR);
+            if (admins.size() <= 1) {
+                throw new RuntimeException("Impossible de supprimer le dernier administrateur du cabinet");
+            }
+        }
+
+        utilisateurRepository.deleteById(userId);
     }
 }
 

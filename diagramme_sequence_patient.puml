@@ -1,0 +1,100 @@
+@startuml Diagramme_Sequence_Creation_Patient
+
+!define ACTOR_COLOR #E3F2FD
+!define SYSTEM_COLOR #E8F5E9
+!define DATABASE_COLOR #FFF9C4
+
+skinparam participant {
+  BackgroundColor ACTOR_COLOR
+  BorderColor #1976D2
+}
+
+skinparam database {
+  BackgroundColor DATABASE_COLOR
+  BorderColor #F57C00
+}
+
+actor "Secrétaire" as Secretaire
+participant "Frontend" as Frontend SYSTEM_COLOR
+participant "PatientController" as Controller SYSTEM_COLOR
+participant "PatientService" as Service SYSTEM_COLOR
+participant "PatientRepository" as PatientRepo
+participant "CabinetRepository" as CabinetRepo
+participant "DossierMedicalRepository" as DossierRepo
+database "Base de Données" as DB DATABASE_COLOR
+
+Secretaire -> Frontend: Remplit le formulaire de patient
+activate Frontend
+
+Frontend -> Controller: POST /api/secretaire/patients?cabinetId=X
+activate Controller
+
+Controller -> Service: createPatient(patient, cabinetId)
+activate Service
+
+Service -> CabinetRepo: findById(cabinetId)
+activate CabinetRepo
+CabinetRepo -> DB: SELECT * FROM cabinets WHERE id = ?
+activate DB
+DB --> CabinetRepo: Cabinet
+deactivate DB
+CabinetRepo --> Service: Cabinet
+deactivate CabinetRepo
+
+alt Cabinet non trouvé
+  Service --> Controller: RuntimeException("Cabinet non trouvé")
+  Controller --> Frontend: 404 Not Found
+  Frontend --> Secretaire: Message d'erreur
+else Cabinet trouvé
+  Service -> PatientRepo: findByCin(patient.cin)
+  activate PatientRepo
+  PatientRepo -> DB: SELECT * FROM patients WHERE cin = ?
+  activate DB
+  DB --> PatientRepo: Optional<Patient>
+  deactivate DB
+  PatientRepo --> Service: Optional<Patient>
+  deactivate PatientRepo
+
+  alt CIN déjà existant
+    Service --> Controller: RuntimeException("Un patient avec ce CIN existe déjà")
+    Controller --> Frontend: 400 Bad Request
+    Frontend --> Secretaire: Message d'erreur
+  else CIN unique
+    Service -> Service: patient.setCabinet(cabinet)
+
+    Service -> PatientRepo: save(patient)
+    activate PatientRepo
+    PatientRepo -> DB: INSERT INTO patients (cin, nom, prenom, date_naissance, sexe, num_tel, type_mutuelle, cabinet_id) VALUES (...)
+    activate DB
+    DB --> PatientRepo: Patient créé
+    deactivate DB
+    PatientRepo --> Service: Patient sauvegardé
+    deactivate PatientRepo
+
+    Service -> Service: Créer DossierMedical automatiquement
+    Service -> DossierRepo: save(new DossierMedical)
+    activate DossierRepo
+    DossierRepo -> DB: INSERT INTO dossiers_medicaux (patient_id, date_creation) VALUES (...)
+    activate DB
+    DB --> DossierRepo: DossierMedical créé
+    deactivate DB
+    DossierRepo --> Service: DossierMedical sauvegardé
+    deactivate DossierRepo
+
+    Service --> Controller: Patient créé (avec dossier médical)
+    deactivate Service
+
+    Controller --> Frontend: 201 Created\nPatient
+    deactivate Controller
+
+    Frontend -> Frontend: Afficher message de succès
+    Frontend -> Frontend: Rafraîchir la liste des patients
+
+    Frontend --> Secretaire: Patient créé avec succès
+  end
+end
+
+deactivate Frontend
+
+@enduml
+

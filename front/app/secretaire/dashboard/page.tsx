@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PatientsTab } from "@/components/secretaire/patients-tab"
 import { RendezVousTab } from "@/components/secretaire/rendez-vous-tab"
 import { FacturesTab } from "@/components/secretaire/factures-tab"
+import { AlertsSection } from "@/components/secretaire/alerts-section"
 import { Users, Calendar, FileText } from "lucide-react"
 
 const secretaireNavItems = [
@@ -34,6 +35,12 @@ return (
         <p className="text-sm md:text-base text-[#1d3f24]/70">
           Gestion des patients, rendez-vous et factures
         </p>
+      </div>
+
+      {/* ALERTS SECTION */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-[#1d3f24]">Alertes et notifications</h2>
+        <AlertsSection />
       </div>
 
       {/* MAIN CARD */}
