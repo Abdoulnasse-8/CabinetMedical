@@ -10,7 +10,7 @@ import {
   transformDossierMedicalToBackend,
 } from "./transformers"
 
-const API_BASE_URL = "http://localhost:8080"
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://cabinet-api.68.221.16.224.sslip.io"
 
 class ApiClient {
   private getToken(): string | null {
