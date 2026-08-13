@@ -16,5 +16,5 @@ ENV PORT=8000
 
 COPY --from=build /app/target/cabinet-medical-backend-1.0.0.jar app.jar
 
-EXPOSE 8080
-CMD ["java", "-jar", "app.jar"]
+EXPOSE 8000
+CMD ["java", "-Xmx256m", "-XX:+UseSerialGC", "-XX:TieredStopAtLevel=1", "-jar", "app.jar"]
